@@ -1,0 +1,40 @@
+[project]
+name = "tpf3_transport"
+version = "0.1.0"
+description = "Static site with the Transport Fever 3 vehicle list"
+authors = [
+    {name = "DmitryDavis",email = "dmitrydavis@protonmail.com"},
+]
+dependencies = ["jinja2>=3.1.6"]
+requires-python = "==3.14.*"
+readme = "README.md"
+license = "MIT"
+
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.scripts]
+build = "python build.py"
+serve = "python -m http.server --directory site"
+lint = {composite = ["isort --check-only --diff .", "black --check --diff .", "mypy"]}
+format = {composite = ["isort .", "black ."]}
+
+[dependency-groups]
+linters = [
+    "mypy>=2.4.1",
+    "black>=26.10.1",
+    "isort>=9.0.2",
+]
+
+[tool.black]
+target-version = ["py314"]
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+
+[tool.mypy]
+python_version = "3.14"
+files = ["build.py"]
+strict = true

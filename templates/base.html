@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    try {
+      const theme = localStorage.getItem("theme");
+      if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+    } catch (e) {}
+    // Vehicle list view: saved choice, else cards on narrow screens.
+    try {
+      const view = localStorage.getItem("view");
+      document.documentElement.dataset.view =
+        view === "table" || view === "cards" ? view
+        : matchMedia("(max-width: 700px)").matches ? "cards" : "table";
+    } catch (e) {}
+  </script>
+  <title>{% block title %}Transport Fever 3 Vehicles{% endblock %}</title>
+  <meta name="description" content="{% block description %}All {{ total }} vehicles of Transport Fever 3 with their stats.{% endblock %}">
+  <meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="{{ root }}static/style.css?v={{ version['style.css'] }}">
+  <script src="{{ root }}static/app.js?v={{ version['app.js'] }}" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="brand" href="{{ root or './' }}">
+        <span class="brand-mark" aria-hidden="true">TF3</span>
+        <span>Vehicle Database</span>
+      </a>
+      {% set theme_icons = {
+        "system": '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+        "light": '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+        "dark": '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+      } %}
+      <div class="theme-picker" id="theme-picker">
+        <button class="theme-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="theme-menu" aria-label="Color theme">
+          {% for mode, icon in theme_icons.items() %}
+          <svg class="icon icon-{{ mode }}" viewBox="0 0 24 24" aria-hidden="true">{{ icon | safe }}</svg>
+          {% endfor %}
+          {% for mode in theme_icons %}
+          <span class="theme-label label-{{ mode }}">{{ mode | capitalize }}</span>
+          {% endfor %}
+          <svg class="icon chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="theme-menu" id="theme-menu" role="menu" aria-label="Color theme" hidden>
+          {% for mode, icon in theme_icons.items() %}
+          <button type="button" role="menuitemradio" aria-checked="false" data-mode="{{ mode }}">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">{{ icon | safe }}</svg>
+            <span>{{ mode | capitalize }}</span>
+            <svg class="icon check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <nav class="wrap category-nav" aria-label="Categories">
+      {% for category in categories %}
+      <a href="{{ root }}{{ category.slug }}/"{% if category is sameas current %} aria-current="page"{% endif %}>
+        {% include "icons/" ~ category.slug ~ ".svg" %}
+        {{ category.name }}
+      </a>
+      {% endfor %}
+    </nav>
+  </header>
+
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="wrap site-footer">
+    Fan-made reference for Transport Fever 3. Not affiliated with Urban Games.
+  </footer>
+</body>
+</html>

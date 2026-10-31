@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}{{ current.name }} · Transport Fever 3 Vehicles{% endblock %}
+{% block description %}All {{ current.vehicles | length }} {{ current.name | lower }} in Transport Fever 3 with their stats.{% endblock %}
+
+{% block content %}
+<section class="intro">
+  <h1>{% include "icons/" ~ current.slug ~ ".svg" %} {{ current.name }}</h1>
+  <p>{{ current.vehicles | length }} vehicles available from {{ current.first_year }} to {{ current.last_year }}.</p>
+</section>
+
+<form class="filters" id="filters" autocomplete="off">
+  <label class="field field-search">
+    <span>Search</span>
+    <input type="search" name="q" placeholder="Vehicle name">
+  </label>
+  <label class="field">
+    <span>Available in</span>
+    <input type="number" name="year" inputmode="numeric" min="1800" max="2100" placeholder="Year">
+  </label>
+  {% for key, values in current.filters.items() %}
+  <label class="field">
+    <span>{{ key }}</span>
+    <select name="{{ slugify(key) }}">
+      <option value="">All</option>
+      {% for value in values %}
+      <option>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  {% endfor %}
+  <label class="field sort-field">
+    <span>Sort by</span>
+    <span class="sort-control">
+      <select name="sort" id="sort-select" aria-label="Sort by">
+        <option value="">Default order</option>
+        {% for column in current.columns %}
+        <option value="{{ loop.index0 }}">{{ column.label }}</option>
+        {% endfor %}
+      </select>
+      <button type="button" class="sort-dir" id="sort-dir" aria-label="Reverse sort direction" disabled>
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+      </button>
+    </span>
+  </label>
+  <button class="reset" type="reset">Reset</button>
+  <div class="view-switch" role="group" aria-label="View">
+    <button type="button" data-view="table" aria-pressed="true">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg>
+      Table
+    </button>
+    <button type="button" data-view="cards" aria-pressed="false">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
+      Cards
+    </button>
+  </div>
+</form>
+
+<div class="table-meta">
+  <p class="count" id="count" aria-live="polite">{{ current.vehicles | length }} of {{ current.vehicles | length }} vehicles</p>
+  <p class="legend">
+    <span>Noise, pollution and comfort ratings:</span>
+    {% for name, value in ratings.items() %}
+    <span class="rating rating-{{ value }}">{{ name }}</span>
+    {% endfor %}
+  </p>
+</div>
+
+<div class="table-wrap">
+  <table class="vehicles" id="vehicles">
+    <thead>
+      <tr>
+        {% for column in current.columns %}
+        <th scope="col"{% if column.rating %} class="center"{% elif column.numeric %} class="num"{% endif %} aria-sort="none">
+          <button type="button" data-numeric="{{ column.numeric | lower }}">{{ column.label }}</button>
+        </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for vehicle in current.vehicles %}
+      <tr{% for key, value in vehicle.attrs.items() %} data-{{ key }}="{{ value }}"{% endfor %}>
+        {% for cell in vehicle.cells %}
+        {% if loop.first %}
+        <th scope="row">{{ cell.display }}</th>
+        {% elif cell.rating %}
+        <td class="center" data-sort="{{ cell.sort }}"><span class="rating rating-{{ cell.rating }}" title="{{ cell.title }}">{{ cell.display }}</span></td>
+        {% elif cell.sort is not none %}
+        <td class="num" data-sort="{{ cell.sort }}">{{ cell.display }}</td>
+        {% else %}
+        <td>{{ cell.display }}</td>
+        {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% set card = current.card %}
+<ul class="cards" id="cards">
+  {% for vehicle in current.vehicles %}
+  <li class="card">
+    <div class="card-head">
+      <h2>{{ vehicle.name }}</h2>
+      <span class="card-years">{{ vehicle.years }}</span>
+    </div>
+    <div class="card-tags">
+      {% for i in card.tags %}
+      {% set column = current.columns[i] %}
+      {% set value = vehicle.cells[i].display %}
+      {% if column.key == "Light Rail" %}
+      {% if value == "Yes" %}<span class="tag">Light rail</span>{% endif %}
+      {% elif value %}
+      <span class="tag">{{ value }}</span>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <dl class="card-hero">
+      {% for i, caption in card.hero %}
+      {% set cell = vehicle.cells[i] %}
+      {% set value = cell | hero_value(current.columns[i]) %}
+      <div>
+        <dt>{{ caption }}</dt>
+        <dd{% if value != cell.display %} title="{{ cell.display }}"{% endif %}>{{ value }}</dd>
+      </div>
+      {% endfor %}
+    </dl>
+    <dl class="card-specs">
+      {% for i in card.specs %}
+      {% set column = current.columns[i] %}
+      {% if vehicle.cells[i].display %}
+      <div>
+        <dt>{{ column.short_label }}</dt>
+        <dd>{{ vehicle.cells[i].display }}{% if column.unit %} <small>{{ column.unit }}</small>{% endif %}</dd>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </dl>
+    <dl class="card-ratings">
+      {% for i in card.ratings %}
+      {% set cell = vehicle.cells[i] %}
+      {% if cell.rating %}
+      <div>
+        <dt>{{ current.columns[i].short_label }}</dt>
+        <dd><span class="rating rating-{{ cell.rating }}" title="{{ cell.title }}">{{ cell.display }}</span></dd>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </dl>
+  </li>
+  {% endfor %}
+</ul>
+
+<p class="empty" id="empty" hidden>No vehicles match these filters.</p>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="intro">
+  <h1>Transport Fever 3 Vehicles</h1>
+  <p>{{ total }} vehicles across {{ categories | length }} categories. Pick a category to compare costs, capacity, speed and more.</p>
+</section>
+
+<ul class="category-grid">
+  {% for category in categories %}
+  <li>
+    <a class="category-card" href="{{ category.slug }}/">
+      <span class="card-icon">{% include "icons/" ~ category.slug ~ ".svg" %}</span>
+      <span class="card-title">{{ category.name }}</span>
+      <span class="card-count">{{ category.vehicles | length }} <small>vehicles</small></span>
+      <span class="card-years">{{ category.first_year }} – {{ category.last_year }}</span>
+      {% if category.filters.Payload %}
+      <span class="card-tags">
+        {% for payload in category.filters.Payload %}<span class="tag">{{ payload }}</span>{% endfor %}
+      </span>
+      {% endif %}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}
