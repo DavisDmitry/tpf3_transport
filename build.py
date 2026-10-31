@@ -9,8 +9,12 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
+from xml.sax.saxutils import escape
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+SITE_URL = "https://tpf3.dmitrydavis.xyz"
+SITE_NAME = "TF3 Vehicle Database"
 
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
@@ -150,6 +154,11 @@ class Category:
     vehicles: tuple[Vehicle, ...]
     filters: Mapping[str, tuple[str, ...]]
     card: CardLayout
+
+    @property
+    def headline_stats(self) -> str:
+        """The stats shown large on cards, for page descriptions: "capacity, speed"."""
+        return ", ".join(self.columns[i].short_label.lower() for i, _ in self.card.hero)
 
     @property
     def first_year(self) -> int:
@@ -352,20 +361,46 @@ def build(out: Path) -> None:
         version={p.name: file_hash(p) for p in STATIC_DIR.iterdir()},
         slugify=slugify,
         ratings=RATINGS,
+        site_url=SITE_URL,
+        site_name=SITE_NAME,
     )
     env.filters["hero_value"] = hero_value
 
     # Each category lives in its own directory so URLs look like /road-vehicles/.
-    # `root` is the relative path back to the site root, keeping links base-agnostic.
-    index = env.get_template("index.html").render(current=None, root="")
+    # `root` is the relative path back to the site root, keeping links base-agnostic;
+    # `url` is the absolute address for canonical links, social previews and the sitemap.
+    index_url = f"{SITE_URL}/"
+    index = env.get_template("index.html").render(current=None, root="", url=index_url)
     (out / "index.html").write_text(index, encoding="utf-8")
     for category in categories:
-        page = env.get_template("category.html").render(current=category, root="../")
+        page = env.get_template("category.html").render(
+            current=category, root="../", url=category_url(category)
+        )
         (out / category.slug).mkdir()
         (out / category.slug / "index.html").write_text(page, encoding="utf-8")
         print(f"{category.name:<22} {len(category.vehicles):>3} vehicles")
 
+    urls = (index_url, *(category_url(c) for c in categories))
+    (out / "sitemap.xml").write_text(sitemap(urls), encoding="utf-8")
+    (out / "robots.txt").write_text(
+        f"User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}/sitemap.xml\n",
+        encoding="utf-8",
+    )
+
     print(f"Built {len(categories) + 1} pages into {out}")
+
+
+def category_url(category: Category) -> str:
+    return f"{SITE_URL}/{category.slug}/"
+
+
+def sitemap(urls: Sequence[str]) -> str:
+    entries = "".join(f"  <url><loc>{escape(url)}</loc></url>\n" for url in urls)
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{entries}</urlset>\n"
+    )
 
 
 def main() -> None:

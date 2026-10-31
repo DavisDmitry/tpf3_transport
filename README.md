@@ -15,7 +15,11 @@ pdm run serve   # http://localhost:8000
 - `data/` — one CSV per vehicle category
 - `build.py` — reads the CSVs and renders the templates
 - `templates/` — Jinja2 templates (`base.html`, `index.html`, `category.html`)
-- `static/` — CSS (light/dark themes) and JS (theme switch, table sorting and filters)
+- `static/` — CSS (light/dark themes), JS (theme switch, table sorting and filters), favicon and the social preview image
+- `assets/og-image.svg` — source of `static/og-image.png`; after editing it, re-render on macOS with
+  `sips -s format png assets/og-image.svg --out static/og-image.png`
+
+The site address used for canonical links, the sitemap and social previews is `SITE_URL` in `build.py`.
 
 ## Deploy
 

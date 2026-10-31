@@ -1,9 +1,19 @@
 {% extends "base.html" %}
 
+{% block structured_data %}
+{{ {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": site_name,
+  "url": url,
+  "description": self.description(),
+} | tojson }}
+{% endblock %}
+
 {% block content %}
 <section class="intro">
-  <h1>Transport Fever 3 Vehicles</h1>
-  <p>{{ total }} vehicles across {{ categories | length }} categories. Pick a category to compare costs, capacity, speed and more.</p>
+  <h1>Transport Fever 3 Vehicle Database</h1>
+  <p>Stats for all {{ total }} vehicles in Transport Fever 3 across {{ categories | length }} categories. Pick a category to sort, filter and compare cost, capacity, speed and more.</p>
 </section>
 
 <ul class="category-grid">

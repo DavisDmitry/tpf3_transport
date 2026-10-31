@@ -16,9 +16,25 @@
         : matchMedia("(max-width: 700px)").matches ? "cards" : "table";
     } catch (e) {}
   </script>
-  <title>{% block title %}Transport Fever 3 Vehicles{% endblock %}</title>
-  <meta name="description" content="{% block description %}All {{ total }} vehicles of Transport Fever 3 with their stats.{% endblock %}">
+  <title>{% block title %}Transport Fever 3 Vehicle Database – Stats for All {{ total }} Vehicles{% endblock %}</title>
+  <meta name="description" content="{% block description %}Stats for all {{ total }} Transport Fever 3 vehicles: trains, trams, road vehicles, ships, airplanes and helicopters. Sort, filter and compare cost, capacity, speed and more.{% endblock %}">
+  <link rel="canonical" href="{{ url }}">
   <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="{{ root }}static/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ root }}static/apple-touch-icon.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ site_name }}">
+  <meta property="og:title" content="{{ self.title() }}">
+  <meta property="og:description" content="{{ self.description() }}">
+  <meta property="og:url" content="{{ url }}">
+  <meta property="og:image" content="{{ site_url }}/static/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Transport Fever 3 Vehicle Database">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{% block structured_data %}{% endblock %}</script>
+
   <link rel="stylesheet" href="{{ root }}static/style.css?v={{ version['style.css'] }}">
   <script src="{{ root }}static/app.js?v={{ version['app.js'] }}" defer></script>
 </head>
