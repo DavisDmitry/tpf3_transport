@@ -15,6 +15,14 @@
         view === "table" || view === "cards" ? view
         : matchMedia("(max-width: 700px)").matches ? "cards" : "table";
     } catch (e) {}
+    // Page transition direction, left by a category nav click on the previous page.
+    try {
+      const dir = sessionStorage.getItem("nav-dir");
+      if (dir) {
+        document.documentElement.dataset.navDir = dir;
+        sessionStorage.removeItem("nav-dir");
+      }
+    } catch (e) {}
   </script>
   <title>{% block title %}Transport Fever 3 Vehicle Database – Stats for All {{ total }} Vehicles{% endblock %}</title>
   <meta name="description" content="{% block description %}Stats for all {{ total }} Transport Fever 3 vehicles: trains, trams, road vehicles, ships, airplanes and helicopters. Sort, filter and compare cost, capacity, speed and more.{% endblock %}">
@@ -73,7 +81,8 @@
     </div>
     <nav class="wrap category-nav" aria-label="Categories">
       {% for category in categories %}
-      <a href="{{ root }}{{ category.slug }}/"{% if category is sameas current %} aria-current="page"{% endif %}>
+      <a href="{{ root }}{{ category.slug }}/" style="--vt-name: nav-{{ category.slug }}"{% if category is sameas current %} aria-current="page"{% endif %}>
+        {% if category is sameas current %}<span class="nav-pill" aria-hidden="true"></span>{% endif %}
         {% include "icons/" ~ category.slug ~ ".svg" %}
         {{ category.name }}
       </a>

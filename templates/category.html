@@ -41,20 +41,24 @@
     </select>
   </label>
   {% endfor %}
-  <label class="field sort-field">
-    <span>Sort by</span>
-    <span class="sort-control">
-      <select name="sort" id="sort-select" aria-label="Sort by">
-        <option value="">Default order</option>
-        {% for column in current.columns %}
-        <option value="{{ loop.index0 }}">{{ column.label }}</option>
-        {% endfor %}
-      </select>
-      <button type="button" class="sort-dir" id="sort-dir" aria-label="Reverse sort direction" disabled>
-        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
-      </button>
-    </span>
-  </label>
+  <div class="sort-field">
+    <div class="sort-clip">
+      <label class="field">
+        <span>Sort by</span>
+        <span class="sort-control">
+          <select name="sort" id="sort-select" aria-label="Sort by">
+            <option value="">Default order</option>
+            {% for column in current.columns %}
+            <option value="{{ loop.index0 }}">{{ column.label }}</option>
+            {% endfor %}
+          </select>
+          <button type="button" class="sort-dir" id="sort-dir" aria-label="Reverse sort direction" disabled>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+          </button>
+        </span>
+      </label>
+    </div>
+  </div>
   <button class="reset" type="reset">Reset</button>
   <div class="view-switch" role="group" aria-label="View">
     <button type="button" data-view="table" aria-pressed="true">

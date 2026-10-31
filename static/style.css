@@ -138,6 +138,13 @@ a { color: inherit; }
   display: none;
 }
 
+/* Theme switch crossfade (app.js wraps the change in a view transition). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 250ms;
+  animation-timing-function: ease-in-out;
+}
+
 /* The toggle's icon and label follow the root data-theme, which the <head>
    script sets before first paint, so the button never changes after load. */
 .theme-label { display: none; }
@@ -230,6 +237,8 @@ a { color: inherit; }
 }
 
 .category-nav a {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -244,10 +253,98 @@ a { color: inherit; }
 
 .category-nav a:hover { background: var(--surface-2); color: var(--text); }
 
-.category-nav a[aria-current="page"] {
+/* No bold here: a wider label would shift every item after it between pages. */
+.category-nav a[aria-current="page"] { color: var(--accent); }
+
+/* The active background is its own element so it can slide between items. */
+.nav-pill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 6px;
   background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
+}
+
+/* Page transitions between pages (cross-document view transitions; ignored where
+   unsupported). Scoped to the page-nav type so the theme and view switch
+   transitions on a single page are unaffected.
+   Layers, bottom to top: the rest of the page (instant), <main> (slides or fades),
+   the header (instant), the active nav pill (slides), nav labels (instant). */
+@view-transition {
+  navigation: auto;
+  types: page-nav;
+}
+
+:root:active-view-transition-type(page-nav) main { view-transition-name: page; }
+
+:root:active-view-transition-type(page-nav) .site-header { view-transition-name: site-header; }
+
+:root:active-view-transition-type(page-nav) .nav-pill { view-transition-name: nav-pill; }
+
+:root:active-view-transition-type(page-nav) .category-nav a {
+  view-transition-name: var(--vt-name);
+  view-transition-class: nav-link;
+}
+
+:root:active-view-transition-type(page-nav)::view-transition-group(root),
+:root:active-view-transition-type(page-nav)::view-transition-new(root),
+:root:active-view-transition-type(page-nav)::view-transition-group(page),
+:root:active-view-transition-type(page-nav)::view-transition-group(site-header),
+:root:active-view-transition-type(page-nav)::view-transition-new(site-header),
+:root:active-view-transition-type(page-nav)::view-transition-group(*.nav-link),
+:root:active-view-transition-type(page-nav)::view-transition-new(*.nav-link) {
+  animation: none;
+}
+
+:root:active-view-transition-type(page-nav)::view-transition-old(root),
+:root:active-view-transition-type(page-nav)::view-transition-old(site-header),
+:root:active-view-transition-type(page-nav)::view-transition-old(*.nav-link) {
+  display: none;
+}
+
+:root:active-view-transition-type(page-nav)::view-transition-group(page) { z-index: 1; }
+:root:active-view-transition-type(page-nav)::view-transition-group(site-header) { z-index: 2; }
+:root:active-view-transition-type(page-nav)::view-transition-group(nav-pill) {
+  z-index: 3;
+  animation-duration: 320ms;
+  animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+:root:active-view-transition-type(page-nav)::view-transition-group(*.nav-link) { z-index: 4; }
+
+/* Content: a plain fade by default, a slide when a nav click set the direction. */
+:root:active-view-transition-type(page-nav)::view-transition-old(page) {
+  animation: page-fade-out 140ms ease-in both;
+}
+
+:root:active-view-transition-type(page-nav)::view-transition-new(page) {
+  animation: page-fade-in 240ms ease-out 60ms both;
+}
+
+:root[data-nav-dir="forward"]:active-view-transition-type(page-nav)::view-transition-old(page) {
+  animation-name: page-out-left;
+}
+
+:root[data-nav-dir="forward"]:active-view-transition-type(page-nav)::view-transition-new(page) {
+  animation-name: page-in-right;
+}
+
+:root[data-nav-dir="back"]:active-view-transition-type(page-nav)::view-transition-old(page) {
+  animation-name: page-out-right;
+}
+
+:root[data-nav-dir="back"]:active-view-transition-type(page-nav)::view-transition-new(page) {
+  animation-name: page-in-left;
+}
+
+@keyframes page-fade-out { to { opacity: 0; } }
+@keyframes page-fade-in { from { opacity: 0; } }
+@keyframes page-out-left { to { opacity: 0; transform: translateX(-40px); } }
+@keyframes page-out-right { to { opacity: 0; transform: translateX(40px); } }
+@keyframes page-in-right { from { opacity: 0; transform: translateX(40px); } }
+@keyframes page-in-left { from { opacity: 0; transform: translateX(-40px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
 }
 
 /* Intro */
@@ -387,8 +484,12 @@ th button:focus-visible {
 
 .sort-dir[data-dir="ascending"] .icon { transform: rotate(180deg); }
 
+/* Segmented control with a sliding thumb: equal-width buttons, and a ::before
+   pill that moves under the active one based on the root data-view. */
 .view-switch {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   margin-left: auto;
   padding: 3px;
   gap: 2px;
@@ -397,9 +498,26 @@ th button:focus-visible {
   background: var(--surface-2);
 }
 
+.view-switch::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 8px) / 2);
+  border-radius: 5px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: transform 220ms cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+:root[data-view="cards"] .view-switch::before { transform: translateX(calc(100% + 2px)); }
+
 .view-switch button {
+  position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 4px 10px;
   border: 0;
@@ -409,14 +527,16 @@ th button:focus-visible {
   font: inherit;
   font-size: 14px;
   cursor: pointer;
+  transition: color 220ms;
 }
 
 .view-switch .icon { display: block; }
 
-.view-switch button[aria-pressed="true"] {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow);
+.view-switch button[aria-pressed="true"] { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .view-switch::before,
+  .view-switch button { transition: none; }
 }
 
 .sort-dir:focus-visible,
@@ -425,10 +545,64 @@ th button:focus-visible {
   outline-offset: 1px;
 }
 
+/* Table ↔ cards switch (app.js wraps it in a view transition): the old list
+   fades out, the new one fades in rising slightly; the rest of the page crossfades. */
+:root.view-switching .table-wrap,
+:root.view-switching .cards { view-transition-name: vehicle-list; }
+
+::view-transition-group(vehicle-list) { animation: none; }
+
+::view-transition-old(vehicle-list) { animation: list-out 120ms ease-in both; }
+
+::view-transition-new(vehicle-list) { animation: list-in 240ms ease-out 80ms both; }
+
+@keyframes list-out { to { opacity: 0; } }
+
+@keyframes list-in { from { opacity: 0; transform: translateY(12px); } }
+
+/* The filter row shows its live new state at once instead of crossfading, so its
+   own CSS transitions play cleanly: the switcher thumb slides and the sort field
+   unfolds, pushing its neighbours. */
+:root.view-switching .filters { view-transition-name: filters; }
+
+::view-transition-group(filters),
+::view-transition-new(filters) { animation: none; }
+
+::view-transition-old(filters) { display: none; }
+
 /* Only one view is visible; <head> sets data-view before first paint. */
 :root[data-view="cards"] .table-wrap,
-:root:not([data-view="cards"]) .cards,
-:root:not([data-view="cards"]) .sort-field { display: none; }
+:root:not([data-view="cards"]) .cards { display: none; }
+
+/* The sort field (cards view only) folds to zero width in table view: a 0fr → 1fr
+   grid column with a clipping child. The negative margin cancels the row gap so
+   the folded field takes no space; visibility keeps it out of the tab order. */
+.sort-field {
+  display: grid;
+  grid-template-columns: 1fr;
+  transition:
+    grid-template-columns 220ms ease,
+    margin-left 220ms ease,
+    opacity 220ms ease,
+    visibility 0s;
+}
+
+:root:not([data-view="cards"]) .sort-field {
+  grid-template-columns: 0fr;
+  margin-left: -10px;
+  opacity: 0;
+  visibility: hidden;
+  transition-delay: 0s, 0s, 0s, 220ms;
+}
+
+/* Padding with a matching negative margin leaves room for focus outlines. */
+.sort-clip { min-width: 0; overflow: hidden; padding: 3px; margin: -3px; }
+
+.sort-clip .field { width: max-content; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sort-field { transition: none; }
+}
 
 .table-meta {
   display: flex;

@@ -43,15 +43,25 @@
     if (refocus) button.focus();
   };
 
+  // Crossfade between the old and new theme where the View Transitions API exists;
+  // switch instantly otherwise or when the user prefers reduced motion.
+  const choose = (mode) => {
+    const update = () => {
+      apply(mode);
+      close(true);
+    };
+    const animate =
+      mode !== picker.dataset.mode &&
+      document.startViewTransition &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (animate) document.startViewTransition(update);
+    else update();
+  };
+
   apply(read());
 
   button.addEventListener("click", () => (menu.hidden ? open() : close(false)));
-  items.forEach((item) =>
-    item.addEventListener("click", () => {
-      apply(item.dataset.mode);
-      close(true);
-    })
-  );
+  items.forEach((item) => item.addEventListener("click", () => choose(item.dataset.mode)));
   menu.addEventListener("keydown", (e) => {
     const index = items.indexOf(document.activeElement);
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
@@ -72,6 +82,24 @@
   picker.addEventListener("focusout", (e) => {
     if (!picker.contains(e.relatedTarget)) close(false);
   });
+})();
+
+// Category nav: remember whether the clicked category is right or left of the
+// current one, so the next page slides in from that side (read in <head>).
+(() => {
+  const links = Array.from(document.querySelectorAll(".category-nav a"));
+  const current = links.findIndex((a) => a.getAttribute("aria-current") === "page");
+  if (current < 0) return;
+  links.forEach((link, index) =>
+    link.addEventListener("click", (e) => {
+      if (index === current || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+        return;
+      }
+      try {
+        sessionStorage.setItem("nav-dir", index > current ? "forward" : "back");
+      } catch (err) {}
+    })
+  );
 })();
 
 // Vehicle table: sorting and filtering.
@@ -191,5 +219,22 @@
     }
   };
   setView(document.documentElement.dataset.view || "table", false);
-  viewButtons.forEach((b) => b.addEventListener("click", () => setView(b.dataset.view, true)));
+
+  // Animate the switch where the View Transitions API exists. The list gets its
+  // transition name only while switching (see .view-switching in style.css).
+  const switchView = (view) => {
+    const root = document.documentElement;
+    const animate =
+      view !== root.dataset.view &&
+      document.startViewTransition &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!animate) {
+      setView(view, true);
+      return;
+    }
+    root.classList.add("view-switching");
+    const transition = document.startViewTransition(() => setView(view, true));
+    transition.finished.finally(() => root.classList.remove("view-switching"));
+  };
+  viewButtons.forEach((b) => b.addEventListener("click", () => switchView(b.dataset.view)));
 })();
