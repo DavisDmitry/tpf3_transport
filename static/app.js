@@ -45,10 +45,12 @@
 
   // Crossfade between the old and new theme where the View Transitions API exists;
   // switch instantly otherwise or when the user prefers reduced motion.
-  const choose = (mode) => {
+  // Keyboard users get focus back on the toggle; mouse users get no leftover focus.
+  const choose = (mode, fromKeyboard) => {
     const update = () => {
       apply(mode);
-      close(true);
+      close(fromKeyboard);
+      if (!fromKeyboard) document.activeElement?.blur();
     };
     const animate =
       mode !== picker.dataset.mode &&
@@ -61,7 +63,10 @@
   apply(read());
 
   button.addEventListener("click", () => (menu.hidden ? open() : close(false)));
-  items.forEach((item) => item.addEventListener("click", () => choose(item.dataset.mode)));
+  // A click from Enter/Space has detail 0; a mouse click counts presses.
+  items.forEach((item) =>
+    item.addEventListener("click", (e) => choose(item.dataset.mode, e.detail === 0))
+  );
   menu.addEventListener("keydown", (e) => {
     const index = items.indexOf(document.activeElement);
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
@@ -82,6 +87,10 @@
   picker.addEventListener("focusout", (e) => {
     if (!picker.contains(e.relatedTarget)) close(false);
   });
+  // Safari doesn't focus buttons on click: pressing a menu item would blur the
+  // focused item with no relatedTarget, closing the menu before the click lands.
+  // Keeping focus where it is on mousedown avoids that.
+  picker.addEventListener("mousedown", (e) => e.preventDefault());
 })();
 
 // Category nav: remember whether the clicked category is right or left of the
