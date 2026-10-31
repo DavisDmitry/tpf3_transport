@@ -1,0 +1,22 @@
+Name            , Start Year, End Year, Cost   , Upkeep, Payload   , Capacity, Speed, Loading Speed, Noise    , Noise Value, Pollution, Pollution Value, Comfortability, Comfort Value, Weight, Length
+Open Car        ,       1892,     1910, $55080 , $9180 , Passengers,        6,    25,           4.0, Very Good,          10, Very Good,               4, Mediocre      ,         0.550,    2.0,    7.3
+Closed Car      ,       1896,     1930, $81906 , $13651, Passengers,        8,    30,           3.5, Very Good,           8, Very Good,               5, Poor          ,         0.425,   10.0,    6.9
+Double Deck Car ,       1905,     1945, $122862, $20477, Passengers,       12,    30,           2.0, Very Good,          12, Very Good,               5, Very Poor     ,         0.200,   10.0,    8.6
+Nuremberg F Car ,       1920,     1960, $146976, $24496, Passengers,       12,    40,           3.0, Very Good,          15, Very Good,               7, Poor          ,         0.425,    5.0,    9.8
+Gotha T1 Car    ,       1928,     1970, $223542, $37257, Passengers,       14,    60,           5.0, Very Good,          20, Very Good,               6, Good          ,         0.700,    6.0,   10.0
+DUEWAG Car      ,       1955,     1995, $226386, $37731, Passengers,       16,    50,           6.0, Good     ,          35, Very Good,               8, Very Good     ,         0.850,   10.0,   15.0
+Cargo Car 1895  ,       1895,     1960, $97986 , $16331, All Cargo ,        8,    40,           2.0, Very Good,          10, Very Good,              13,               ,         0.000,    3.0,    4.8
+Box Car 1896    ,       1896,     1960, $146979, $20414, Goods     ,        8,    40,           4.0, Very Good,          11, Very Good,              16,               ,         0.000,    3.0,    4.8
+Stake Car 1897  ,       1897,     1960, $146979, $20414, Flatbed   ,        8,    40,           4.0, Very Good,           9, Very Good,              15,               ,         0.000,    3.0,    4.8
+Gondola Car 1898,       1898,     1960, $146979, $20414, Bulk      ,        8,    40,           4.0, Very Good,          11, Very Good,              16,               ,         0.000,    3.0,    5.3
+Tank Car 1899   ,       1899,     1960, $146979, $20414, Liquid    ,        8,    40,           4.0, Very Good,           8, Very Good,              13,               ,         0.000,    3.0,    6.7
+Cargo Car 1950  ,       1950,     2010, $223542, $37257, All Cargo ,       14,    60,           3.0, Very Good,          22, Very Good,              25,               ,         0.000,    7.0,    9.6
+Tank Car 1950   ,       1950,     2010, $335313, $46571, Liquid    ,       14,    60,           6.0, Very Good,          26, Very Good,              21,               ,         0.000,    7.0,    9.6
+Gondola Car 1950,       1950,     2010, $335313, $46571, Bulk      ,       14,    60,           6.0, Very Good,          22, Very Good,              25,               ,         0.000,    7.0,    8.2
+Stake Car 1950  ,       1950,     2010, $335313, $46571, Flatbed   ,       14,    60,           6.0, Very Good,          24, Very Good,              23,               ,         0.000,    7.0,    9.6
+Box Car 1950    ,       1950,     2010, $335313, $46571, Goods     ,       14,    60,           6.0, Very Good,          25, Very Good,              22,               ,         0.000,    7.0,    9.6
+Cargo Car 2005  ,       2005,        0, $407772, $67962, All Cargo ,       21,    80,           4.0, Good     ,          45, Very Good,              24,               ,         0.000,   12.0,   15.0
+Tank Car 2005   ,       2005,        0, $640782, $88998, Liquid    ,       22,    80,           8.0, Mediocre ,          47, Very Good,              27,               ,         0.000,   12.0,   15.0
+Gondola Car 2005,       2005,        0, $611658, $84953, Bulk      ,       21,    80,           8.0, Mediocre ,          48, Very Good,              25,               ,         0.000,   12.0,   15.0
+Stake Car 2005  ,       2005,        0, $611658, $84953, Flatbed   ,       21,    80,           8.0, Good     ,          46, Very Good,              26,               ,         0.000,   12.0,   15.0
+Box Car 2005    ,       2005,        0, $611658, $84953, Liquid    ,       21,    80,           8.0, Mediocre ,          47, Very Good,              28,               ,         0.000,   12.0,   15.0

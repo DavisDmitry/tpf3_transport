@@ -1,0 +1,31 @@
+Name                   , Start Year, End Year, Cost     , Upkeep  , Engine  , Speed, Power , Noise    , Noise Value, Pollution, Pollution Value, Weight, Length, Tractive Effort
+Prussian Class T3      ,       1882,     1920, $1094868 , $182478 , Steam   ,    50,  200.0, Very Good,           5, Very Good,              20,   38.0,    8.6,            50.0
+2-6-0 Mogul            ,       1885,     1930, $1912398 , $318733 , Steam   ,    75,  400.0, Very Good,          20, Mediocre ,              40,  122.0,   19.0,            80.0
+Russian Class OB       ,       1890,     1940, $2265576 , $377596 , Steam   ,    60,  441.0, Very Good,          25, Good     ,              25,   52.0,   17.0,            95.0
+4-4-2 Atlantic         ,       1906,     1950, $3076356 , $512726 , Steam   ,   100,  700.0, Good     ,          40, Poor     ,              50,  130.0,   24.0,           100.0
+Baden Class VI c       ,       1914,     1960, $2626134 , $437689 , Steam   ,    90,  580.0, Very Good,          15, Good     ,              30,   76.0,   13.0,            85.0
+Chinese Class JF1      ,       1918,     1965, $5390976 , $898496 , Steam   ,    80, 1150.0, Very Good,          30, Poor     ,              55,  100.0,   23.0,           250.0
+Ce 6/8 II Crocodile    ,       1921,     1960, $7470888 , $1245148, Steam   ,    90, 1650.0, Mediocre ,          50, Good     ,              30,  128.0,   20.0,           150.0
+Russian Class SU       ,       1927,     1970, $5132868 , $855478 , Steam   ,   115, 1213.0, Good     ,          45, Poor     ,              55,   85.0,   24.0,           104.0
+ALCO HH 600            ,       1930,     1975, $1099191 , $366397 , Diesel  ,    70,  450.0, Very Good,          30, Good     ,              25,   93.0,   13.0,           125.0
+Pennsylvanian Class GG1,       1934,     1980, $11687898, $1947983, Electric,   160, 3000.0, Poor     ,          60, Good     ,              35,  215.0,   24.0,           291.0
+British Class A4       ,       1935,     1975, $7922934 , $1320489, Steam   ,   145, 1986.0, Good     ,          40, Mediocre ,              45,  105.0,   22.0,           158.0
+German Class E 94      ,       1940,     1985, $13583436, $2263906, Electric,    90, 3000.0, Good     ,          45, Good     ,              30,  119.0,   19.0,           363.0
+ALCO 4-8-8-4 Big Boy   ,       1941,     1980, $18693072, $3115512, Steam   ,   130, 4560.0, Very Poor,          90, Very Poor,              70,  567.0,   40.0,           602.0
+Swiss Re 4/4 I         ,       1946,     1990, $7660104 , $1276684, Electric,   125, 1850.0, Mediocre ,          50, Very Good,              20,   57.0,   15.0,           138.0
+EMD F-Unit             ,       1949,     1990, $9018588 , $1503100, Diesel  ,   130, 2200.0, Good     ,          40, Poor     ,              50,  145.0,   31.0,           500.0
+Chinese Class RM       ,       1958,     1985, $4453194 , $742199 , Steam   ,   110, 1040.0, Good     ,          45, Poor     ,              55,   80.0,   24.0,           180.0
+German Class V 100     ,       1958,     2000, $3663000 , $610500 , Diesel  ,    90,  809.0, Good     ,          40, Good     ,              30,   62.0,   13.0,           177.0
+Austrian Class 1042    ,       1960,     2000, $13279128, $2213188, Electric,   140, 3300.0, Mediocre ,          50, Very Good,              20,   84.0,   16.0,           260.0
+EMD SD40-2             ,       1972,     2010, $13008504, $2168084, Diesel  ,   105, 3000.0, Poor     ,          60, Very Poor,              65,  167.0,   20.0,           410.0
+Chinese Class DF5      ,       1976,     2015, $5625366 , $937561 , Diesel  ,    80, 1200.0, Good     ,          40, Poor     ,              50,  138.0,   18.0,           325.0
+EMD AEM-7              ,       1978,     2015, $15991428, $2665238, Electric,   200, 4320.0, Mediocre ,          50, Good     ,              30,  133.0,   16.0,           133.0
+Chinese Class SS4G     ,       1980,     2020, $38234712, $6372452, Electric,   100, 8700.0, Good     ,          45, Good     ,              25,  184.0,   33.0,           436.0
+Chinese Class DF4B     ,       1984,     2025, $11089068, $1848178, Diesel  ,   120, 2650.0, Poor     ,          60, Poor     ,              60,  138.0,   21.0,           243.0
+Japanese Class EF66    ,       1989,     2025, $16319760, $2719960, Electric,   120, 3900.0, Good     ,          40, Good     ,              30,  101.0,   18.0,           290.0
+GE P42DC               ,       1995,        0, $12350214, $2058369, Diesel  ,   160, 3170.0, Mediocre ,          50, Very Poor,              70,  122.0,   22.0,           280.0
+Norwegian Class El 18  ,       1996,        0, $39978576, $3331548, Electric,   200, 5400.0, Poor     ,          60, Good     ,              25,   82.0,   19.0,           275.0
+German Class 185       ,       2000,        0, $16363056, $2727176, Electric,   160, 4200.0, Good     ,          40, Good     ,              25,   84.0,   19.0,           300.0
+German Class 246       ,       2008,        0, $8571126 , $1428521, Diesel  ,   160, 2200.0, Good     ,          45, Mediocre ,              40,   80.0,   19.0,           270.0
+Chinese Class HXD3B    ,       2009,        0, $40171710, $6695285, Electric,   120, 9600.0, Mediocre ,          50, Good     ,              25,  150.0,   22.0,           506.0
+Stadler Eurodual       ,       2018,        0, $27271764, $4545294, Electric,   160, 7000.0, Poor     ,          55, Mediocre ,              40,   91.0,   22.0,           500.0

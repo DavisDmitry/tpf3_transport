@@ -1,0 +1,6 @@
+Name              , Start Year, End Year, Cost   , Upkeep, Engine  , Speed, Power, Noise    , Noise Value, Pollution, Pollution Value, Weight, Length, Tractive Effort
+Steam Tram        ,       1900,     1930, $127986, $21331, Steam   ,    30,  30.0, Very Good,          16, Good     ,              30,   10.0,    4.9,            15.0
+Swiss GE 2/2      ,       1920,     1970, $267930, $44655, Electric,    40,  70.0, Very Good,          14, Very Good,              20,   18.0,    6.7,            25.0
+GE 25-ton Switcher,       1945,     1995, $403650, $67275, Diesel  ,    45, 110.0, Very Good,          20, Mediocre ,              50,   23.0,    4.9,            67.0
+Schöma Tm 2/2     ,       1970,        0, $556908, $92818, Diesel  ,    70, 176.0, Very Good,          25, Poor     ,              70,   10.0,    6.4,            50.0
+Vienna Type LH    ,       1990,        0, $379710, $63285, Electric,    70, 120.0, Good     ,          45, Very Good,              25,   22.0,    7.3,            40.0
