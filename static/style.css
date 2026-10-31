@@ -666,7 +666,27 @@ th button:focus-visible {
 /* Footer */
 
 .site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
   padding-block: 32px;
   font-size: 13px;
   color: var(--muted);
 }
+
+.site-footer p { margin: 0; }
+
+.repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.repo-link .icon { display: block; width: 14px; height: 14px; }
+
+.repo-link:hover { color: var(--accent); }
+
+.repo-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
