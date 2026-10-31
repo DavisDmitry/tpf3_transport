@@ -269,7 +269,8 @@ a { color: inherit; }
    unsupported). Scoped to the page-nav type so the theme and view switch
    transitions on a single page are unaffected.
    Layers, bottom to top: the rest of the page (instant), <main> (slides or fades),
-   the header (instant), the active nav pill (slides), nav labels (instant). */
+   the category icon (flies), the header (instant), the active nav pill (slides),
+   nav labels (instant). */
 @view-transition {
   navigation: auto;
   types: page-nav;
@@ -284,6 +285,16 @@ a { color: inherit; }
 :root:active-view-transition-type(page-nav) .category-nav a {
   view-transition-name: var(--vt-name);
   view-transition-class: nav-link;
+}
+
+/* The category icon flies between its index card and the category heading.
+   Between two categories (data-nav-dir is set) it isn't captured separately,
+   so it slides with the rest of the content. */
+.vt-icon { display: inline-flex; }
+
+:root:not([data-nav-dir]):active-view-transition-type(page-nav) .vt-icon {
+  view-transition-name: var(--vt-name);
+  view-transition-class: cat-icon;
 }
 
 :root:active-view-transition-type(page-nav)::view-transition-group(root),
@@ -303,6 +314,11 @@ a { color: inherit; }
 }
 
 :root:active-view-transition-type(page-nav)::view-transition-group(page) { z-index: 1; }
+:root:active-view-transition-type(page-nav)::view-transition-group(*.cat-icon) {
+  z-index: 1;
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+}
 :root:active-view-transition-type(page-nav)::view-transition-group(site-header) { z-index: 2; }
 :root:active-view-transition-type(page-nav)::view-transition-group(nav-pill) {
   z-index: 3;

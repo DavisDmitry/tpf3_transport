@@ -16,6 +16,8 @@
         : matchMedia("(max-width: 700px)").matches ? "cards" : "table";
     } catch (e) {}
     // Page transition direction, left by a category nav click on the previous page.
+    // It only applies to that one transition, so it's cleared once it finishes, and
+    // when a page that set it on click comes back from the back/forward cache.
     try {
       const dir = sessionStorage.getItem("nav-dir");
       if (dir) {
@@ -23,6 +25,14 @@
         sessionStorage.removeItem("nav-dir");
       }
     } catch (e) {}
+    const clearNavDir = () => delete document.documentElement.dataset.navDir;
+    addEventListener("pagereveal", (e) => {
+      if (e.viewTransition) e.viewTransition.finished.finally(clearNavDir);
+      else clearNavDir();
+    });
+    addEventListener("pageshow", (e) => {
+      if (e.persisted) clearNavDir();
+    });
   </script>
   <title>{% block title %}Transport Fever 3 Vehicle Database – Stats for All {{ total }} Vehicles{% endblock %}</title>
   <meta name="description" content="{% block description %}Stats for all {{ total }} Transport Fever 3 vehicles: trains, trams, road vehicles, ships, airplanes and helicopters. Sort, filter and compare cost, capacity, speed and more.{% endblock %}">

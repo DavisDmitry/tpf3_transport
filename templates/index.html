@@ -20,7 +20,9 @@
   {% for category in categories %}
   <li>
     <a class="category-card" href="{{ category.slug }}/">
-      <span class="card-icon">{% include "icons/" ~ category.slug ~ ".svg" %}</span>
+      <span class="card-icon">
+        <span class="vt-icon" style="--vt-name: icon-{{ category.slug }}">{% include "icons/" ~ category.slug ~ ".svg" %}</span>
+      </span>
       <span class="card-title">{{ category.name }}</span>
       <span class="card-count">{{ category.vehicles | length }} <small>vehicles</small></span>
       <span class="card-years">{{ category.first_year }} – {{ category.last_year }}</span>

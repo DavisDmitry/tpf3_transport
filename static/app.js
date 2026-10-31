@@ -104,8 +104,12 @@
       if (index === current || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
         return;
       }
+      const dir = index > current ? "forward" : "back";
+      // Also mark this page, so its heading icon isn't captured on its own and
+      // leaves together with the content (see .vt-icon in style.css).
+      document.documentElement.dataset.navDir = dir;
       try {
-        sessionStorage.setItem("nav-dir", index > current ? "forward" : "back");
+        sessionStorage.setItem("nav-dir", dir);
       } catch (err) {}
     })
   );
