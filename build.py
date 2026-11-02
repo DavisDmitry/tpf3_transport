@@ -16,6 +16,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 SITE_URL = "https://tpf3.dmitrydavis.xyz"
 SITE_NAME = "TF3 Vehicle Database"
+# Cloudflare Web Analytics site token (public: it ends up in every page).
+ANALYTICS_TOKEN = "14a0327c620d4b4297c603741ae9411e"
 
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
@@ -453,6 +455,7 @@ def build(out: Path) -> None:
         ratings=RATINGS,
         site_url=SITE_URL,
         site_name=SITE_NAME,
+        analytics_token=ANALYTICS_TOKEN,
     )
     env.filters["hero_value"] = hero_value
     env.globals["card_styles"] = card_styles
