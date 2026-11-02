@@ -57,6 +57,7 @@
   <script type="application/ld+json">{% block structured_data %}{% endblock %}</script>
 
   <link rel="stylesheet" href="{{ root }}static/style.css?v={{ version['style.css'] }}">
+  {% block head %}{% endblock %}
   <script src="{{ root }}static/app.js?v={{ version['app.js'] }}" defer></script>
 </head>
 <body>

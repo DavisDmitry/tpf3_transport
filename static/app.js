@@ -88,9 +88,8 @@ document.querySelectorAll(".category-nav").forEach((list) => {
   if (!table || !form) return;
 
   const tbody = table.tBodies[0];
-  const cardList = document.getElementById("cards");
-  // Table rows and cards are rendered in the same order; item i pairs them.
-  const items = Array.from(tbody.rows, (row, i) => ({ row, card: cardList.children[i] }));
+  // The table is both views: in the cards view CSS lays its rows out as cards.
+  const rows = Array.from(tbody.rows);
   const headers = Array.from(table.tHead.rows[0].cells);
   const numeric = headers.map((th) => th.querySelector("button").dataset.numeric === "true");
   const sortSelect = document.getElementById("sort-select");
@@ -119,20 +118,19 @@ document.querySelectorAll(".category-nav").forEach((list) => {
     sortDir.disabled = index < 0;
     sortDir.dataset.dir = dir || "";
 
-    let ordered = items;
+    let ordered = rows;
     if (index >= 0) {
       const sign = dir === "ascending" ? 1 : -1;
-      ordered = items.slice().sort((a, b) => {
-        const x = cellValue(a.row, index);
-        const y = cellValue(b.row, index);
+      ordered = rows.slice().sort((a, b) => {
+        const x = cellValue(a, index);
+        const y = cellValue(b, index);
         if (x === y) return 0;
         if (x === null) return 1;
         if (y === null) return -1;
         return (numeric[index] ? x - y : x.localeCompare(y)) * sign;
       });
     }
-    tbody.append(...ordered.map((item) => item.row));
-    cardList.append(...ordered.map((item) => item.card));
+    tbody.append(...ordered);
   };
 
   // Header clicks cycle: first direction → other direction → original order.
@@ -161,7 +159,7 @@ document.querySelectorAll(".category-nav").forEach((list) => {
     const query = form.elements.q.value.trim().toLowerCase();
     const year = parseInt(form.elements.year.value, 10);
     let visible = 0;
-    for (const { row, card } of items) {
+    for (const row of rows) {
       const show =
         (!query || row.dataset.name.includes(query)) &&
         (Number.isNaN(year) ||
@@ -170,10 +168,9 @@ document.querySelectorAll(".category-nav").forEach((list) => {
           (s) => !s.value || row.getAttribute(`data-${s.name}`).split("|").includes(s.value)
         );
       row.hidden = !show;
-      card.hidden = !show;
       if (show) visible++;
     }
-    count.textContent = `${visible} of ${items.length} vehicles`;
+    count.textContent = `${visible} of ${rows.length} vehicles`;
     empty.hidden = visible > 0;
   };
 
@@ -186,11 +183,13 @@ document.querySelectorAll(".category-nav").forEach((list) => {
     setTimeout(filter);
   });
 
-  // Table / cards view switch; the initial view is set by the script in <head>.
-  const viewButtons = Array.from(form.querySelectorAll(".view-switch button"));
+  // Table / cards view switch: radios that work without JS via :has(); with JS
+  // the view lives in data-view on <html> (set by the script in <head>), is
+  // remembered and animated, and the radios just mirror it.
+  const viewRadios = Array.from(document.querySelectorAll('input[name="view"]'));
   const setView = (view, save) => {
     document.documentElement.dataset.view = view;
-    viewButtons.forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === view));
+    viewRadios.forEach((radio) => (radio.checked = radio.value === view));
     if (save) {
       try {
         localStorage.setItem("view", view);
@@ -215,5 +214,7 @@ document.querySelectorAll(".category-nav").forEach((list) => {
     const transition = document.startViewTransition(() => setView(view, true));
     transition.finished.finally(() => root.classList.remove("view-switching"));
   };
-  viewButtons.forEach((b) => b.addEventListener("click", () => switchView(b.dataset.view)));
+  viewRadios.forEach((radio) =>
+    radio.addEventListener("change", () => switchView(radio.value))
+  );
 })();

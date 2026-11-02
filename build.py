@@ -3,6 +3,7 @@
 import argparse
 import csv
 import hashlib
+import json
 import re
 import shutil
 from collections.abc import Mapping, Sequence
@@ -96,6 +97,10 @@ RATINGS: Mapping[str, int] = MappingProxyType(
 # End Year 0 (or empty) means the vehicle is never retired; sort it after every real year.
 PRESENT_YEAR = 9999
 
+# Matches when the cards view is on: data-view with JS, the checked view radio
+# without it (the same condition as in style.css).
+CARDS_VIEW = ':root:is([data-view="cards"], :not(.js):has(#view-cards:checked))'
+
 
 @dataclass(frozen=True, slots=True)
 class Cell:
@@ -154,6 +159,15 @@ class Category:
     vehicles: tuple[Vehicle, ...]
     filters: Mapping[str, tuple[str, ...]]
     card: CardLayout
+
+    @property
+    def card_roles(self) -> tuple[str, ...]:
+        """Each column's role in the cards view, used as a class on its cells."""
+        roles = {i: "card-tag" for i in self.card.tags}
+        roles |= {i: "card-hero" for i, _ in self.card.hero}
+        roles |= {i: "card-spec" for i in self.card.specs}
+        roles |= {i: "card-rating" for i in self.card.ratings}
+        return tuple(roles.get(i, "") for i in range(len(self.columns)))
 
     @property
     def headline_stats(self) -> str:
@@ -263,6 +277,82 @@ def card_layout(columns: Sequence[Column]) -> CardLayout:
     )
 
 
+def css_string(text: str) -> str:
+    """A CSS string literal that's also safe inside a <style> element."""
+    return json.dumps(text).replace("<", "\\3C ")
+
+
+def card_styles(category: Category) -> str:
+    """CSS that lays a category's table rows out as cards (the cards view).
+
+    Each row becomes a 6-column grid spanning a fixed number of rows of the
+    list grid, so cards in a row line up via subgrid: head (name, years), tags,
+    two hero numbers per row, three specs per row, then the ratings. Columns are
+    the same for every vehicle in a category, so placement and labels are set
+    once per column here rather than on every cell.
+    """
+    columns = category.columns
+    card = category.card
+    index = {c.key: i for i, c in enumerate(columns)}
+    hero_start = 3
+    spec_start = hero_start + -(-len(card.hero) // 2)
+    rating_row = spec_start + -(-len(card.specs) // 3)
+
+    view = f"{CARDS_VIEW} .vehicles"
+    rules = [
+        f"{view} tbody > tr {{ grid-row: span {rating_row}; }}",
+        f"{view} tr::before {{ grid-row: {spec_start}; }}",
+        f"{view} tr::after {{ grid-row: {rating_row}; }}",
+    ]
+
+    def place(i: int, row: int, col: int, span: int, extra: str = "") -> None:
+        rules.append(
+            f"{view} tr > :nth-child({i + 1}) {{ grid-row: {row}; "
+            f"grid-column: {col} / span {span};{extra} }}"
+        )
+
+    place(index["Name"], 1, 1, 4)
+    place(index["Start Year"], 1, 5, 2)
+    rules.append(
+        f"{view} tr > :nth-child({index['End Year'] + 1}) {{ display: none; }}"
+    )
+    for n, i in enumerate(card.tags):
+        place(i, 2, 1 + 2 * n, 2)
+        if columns[i].key == "Light Rail":
+            # Shown as a "Light rail" tag (data-tag) only when it's "Yes".
+            rules.append(
+                f"{view} tr > :nth-child({i + 1}):not([data-tag]) {{ display: none; }}"
+            )
+    for n, (i, caption) in enumerate(card.hero):
+        place(i, hero_start + n // 2, 1 + n % 2 * 3, 3)
+        rules.append(
+            f"{view} tr > :nth-child({i + 1})::after {{ content: {css_string(caption)}; }}"
+        )
+    for n, i in enumerate(card.specs):
+        column = columns[i]
+        place(
+            i,
+            spec_start + n // 3,
+            1 + n % 3 * 2,
+            2,
+            " padding-top: 12px;" if n < 3 else "",
+        )
+        rules.append(
+            f"{view} tr > :nth-child({i + 1})::before {{ content: {css_string(column.short_label)}; }}"
+        )
+        if column.unit:
+            rules.append(
+                f"{view} tr > :nth-child({i + 1})::after {{ content: {css_string(' ' + column.unit)}; }}"
+            )
+    for n, i in enumerate(card.ratings):
+        place(i, rating_row, 1 + 2 * n, 2, " padding-top: 12px;")
+        rules.append(
+            f"{view} tr > :nth-child({i + 1})::before "
+            f"{{ content: {css_string(columns[i].short_label)}; }}"
+        )
+    return "\n".join(rules)
+
+
 def hero_value(cell: Cell, column: Column) -> str:
     """Shorten millions on cards ("$27.27M"); the full value stays in the table."""
     if column.key in MONEY_COLUMNS and cell.sort is not None and cell.sort >= 1_000_000:
@@ -365,6 +455,7 @@ def build(out: Path) -> None:
         site_name=SITE_NAME,
     )
     env.filters["hero_value"] = hero_value
+    env.globals["card_styles"] = card_styles
 
     # Each category lives in its own directory so URLs look like /road-vehicles/.
     # `root` is the relative path back to the site root, keeping links base-agnostic;

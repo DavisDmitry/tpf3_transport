@@ -607,6 +607,8 @@ a { color: inherit; }
 
 /* Filters */
 
+.filters-form { display: contents; }
+
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -666,13 +668,16 @@ th button:focus-visible {
 
 .sort-dir[data-dir="ascending"] .icon { transform: rotate(180deg); }
 
-/* Segmented control with a sliding thumb: equal-width buttons, and a ::before
-   pill that moves under the active one based on the root data-view. */
+/* Segmented control with a sliding thumb: two equal-width labels around radios,
+   and a ::before pill that moves under the active one. The current view comes
+   from data-view with JS (set before first paint) and from the checked radio
+   without JS, like the theme. */
 .view-switch {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  margin-left: auto;
+  min-inline-size: 0;
+  margin: 0 0 0 auto;
   padding: 3px;
   gap: 2px;
   border: 1px solid var(--border);
@@ -693,9 +698,12 @@ th button:focus-visible {
   transition: transform 220ms cubic-bezier(0.3, 0.7, 0.2, 1);
 }
 
-:root[data-view="cards"] .view-switch::before { transform: translateX(calc(100% + 2px)); }
+:root[data-view="cards"] .view-switch::before,
+:root:not(.js) .view-switch:has(#view-cards:checked)::before {
+  transform: translateX(calc(100% + 2px));
+}
 
-.view-switch button {
+.view-switch label {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -712,25 +720,41 @@ th button:focus-visible {
   transition: color 220ms;
 }
 
+.view-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .view-switch .icon { display: block; }
 
-.view-switch button[aria-pressed="true"] { color: var(--text); }
+:root.js:not([data-view="cards"]) .view-switch label:has(#view-table),
+:root[data-view="cards"] .view-switch label:has(#view-cards),
+:root:not(.js) .view-switch label:has(:checked) { color: var(--text); }
 
 @media (prefers-reduced-motion: reduce) {
   .view-switch::before,
-  .view-switch button { transition: none; }
+  .view-switch label { transition: none; }
 }
 
 .sort-dir:focus-visible,
-.view-switch button:focus-visible {
+.view-switch label:has(:focus-visible) {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
+/* Without JS, search, filters, sorting and Reset can't work: hide them (and
+   make the column headers plain labels). The view switch still works. */
+:root:not(.js) .filters-form { display: none; }
+
+:root:not(.js) .vehicles thead th button { pointer-events: none; cursor: default; }
+
 /* Table ↔ cards switch (app.js wraps it in a view transition): the old list
    fades out, the new one fades in rising slightly; the rest of the page crossfades. */
-:root.view-switching .table-wrap,
-:root.view-switching .cards { view-transition-name: vehicle-list; }
+:root.view-switching .table-wrap { view-transition-name: vehicle-list; }
 
 ::view-transition-group(vehicle-list) { animation: none; }
 
@@ -752,9 +776,6 @@ th button:focus-visible {
 
 ::view-transition-old(filters) { display: none; }
 
-/* Only one view is visible; <head> sets data-view before first paint. */
-:root[data-view="cards"] .table-wrap,
-:root:not([data-view="cards"]) .cards { display: none; }
 
 /* The sort field (cards view only) folds to zero width in table view: a 0fr → 1fr
    grid column with a clipping child. The negative margin cancels the row gap so
@@ -769,7 +790,7 @@ th button:focus-visible {
     visibility 0s;
 }
 
-:root:not([data-view="cards"]) .sort-field {
+:root:not([data-view="cards"], :not(.js):has(#view-cards:checked)) .sort-field {
   grid-template-columns: 0fr;
   margin-left: -10px;
   opacity: 0;
@@ -924,100 +945,150 @@ th button:focus-visible {
 
 .empty { margin: 0; padding: 24px; text-align: center; color: var(--muted); }
 
-/* Vehicle cards */
+/* Vehicle cards: the same table, its rows laid out as cards. These are the
+   generic styles; each category page adds a <style> that places its columns
+   in the card grid and sets their labels (card_styles in build.py). Cells carry
+   a role class (card-tag, card-hero, card-spec, card-rating). The view is cards
+   per data-view with JS, or the checked view radio without it. */
+:root:is([data-view="cards"], :not(.js):has(#view-cards:checked)) {
+  .table-wrap {
+    overflow: visible;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
 
-.cards {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 14px;
+  .vehicles { display: block; }
+
+  .vehicles thead { display: none; }
+
+  .vehicles tbody {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 14px;
+  }
+
+  /* A card: 6 columns, and rows from the list grid (subgrid), so the sections
+     of cards in a row line up even when a name wraps. No containment here
+     (e.g. container-type): it would turn the subgrid off. */
+  .vehicles tbody > tr {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: subgrid;
+    row-gap: 10px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  /* Undo the table cell styles (padding, borders, sticky name, hover). */
+  .vehicles tbody > tr > * {
+    position: static;
+    min-width: 0;
+    max-width: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    white-space: normal;
+  }
+
+  /* Separators above the specs and the ratings (rows set per category). */
+  .vehicles tbody > tr::before,
+  .vehicles tbody > tr::after {
+    content: "";
+    grid-column: 1 / -1;
+    align-self: start;
+    border-top: 1px solid var(--border);
+  }
+
+  .vehicles tbody th {
+    align-self: baseline;
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+
+  /* The year cell shows the whole range, e.g. "1935–present". */
+  .vehicles [data-years] {
+    align-self: baseline;
+    justify-self: end;
+    font-size: 0;
+  }
+
+  .vehicles [data-years]::before {
+    content: attr(data-years);
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .vehicles .card-tag {
+    align-self: start;
+    justify-self: start;
+    margin-top: -4px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .vehicles .card-tag[data-tag] { font-size: 0; }
+
+  .vehicles .card-tag[data-tag]::before {
+    content: attr(data-tag);
+    font-size: 12px;
+  }
+
+  .vehicles .card-hero {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  /* Millions are shortened on cards ("$27.27M"); the full value is the title. */
+  .vehicles .card-hero[data-short] { font-size: 0; }
+
+  .vehicles .card-hero[data-short]::before {
+    content: attr(data-short);
+    display: block;
+    font-size: 22px;
+  }
+
+  /* Hero caption below the number; spec and rating labels above the value. */
+  .vehicles .card-hero::after,
+  .vehicles .card-spec::before,
+  .vehicles .card-rating::before {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .vehicles .card-spec {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  /* The unit, after the value. */
+  .vehicles .card-spec::after {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .vehicles .card-rating::before { margin-bottom: 2px; }
+
+  .vehicles .card-rating .rating { font-size: 13px; }
+
+  /* No rating (e.g. comfort on cargo vehicles): keep the slot, hide the label. */
+  .vehicles .card-rating:empty { visibility: hidden; }
 }
-
-/* Each card spans five rows of the list grid (head, tags, hero, specs, ratings)
-   via subgrid, so sections line up across a row even when a name wraps. */
-.card {
-  display: grid;
-  grid-row: span 5;
-  grid-template-rows: subgrid;
-  row-gap: 12px;
-  padding: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: var(--shadow);
-}
-
-.card dl,
-.card dd { margin: 0; }
-
-.card-head {
-  display: flex;
-  align-items: baseline;
-  align-self: start;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.card-head h2 { margin: 0; font-size: 17px; line-height: 1.3; }
-
-.card .card-years { flex: none; font-size: 13px; }
-
-.card .card-tags { margin-top: -6px; }
-
-.card .card-tags:empty { display: none; }
-
-.card-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px 16px;
-  container-type: inline-size;
-}
-
-.card-hero div { display: flex; flex-direction: column-reverse; }
-
-.card-hero dd {
-  /* Shrinks slightly on narrow cards so long numbers still fit. */
-  font-size: clamp(17px, 8cqi, 22px);
-  font-weight: 700;
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-}
-
-.card-hero dt,
-.card-specs dt,
-.card-ratings dt { font-size: 12px; color: var(--muted); }
-
-.card-specs {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 8px 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-
-.card-specs dd {
-  font-size: 15px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.card-specs small { font-size: 12px; font-weight: 400; color: var(--muted); }
-
-.card-ratings {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-
-.card-ratings:empty { display: none; }
-
-.card-ratings div { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-
-.card-ratings .rating { font-size: 13px; }
 
 /* Footer */
 
