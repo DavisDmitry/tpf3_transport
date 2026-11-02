@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
+    // With JS the theme comes from data-theme (saved choice, crossfaded on change);
+    // without it, CSS follows the checked theme radio instead (see style.css).
+    document.documentElement.classList.add("js");
     try {
       const theme = localStorage.getItem("theme");
       if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
@@ -69,7 +72,7 @@
         "dark": '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
       } %}
       <div class="theme-picker" id="theme-picker">
-        <button class="theme-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="theme-menu" aria-label="Color theme">
+        <button class="theme-toggle" type="button" popovertarget="theme-menu" aria-label="Color theme">
           {% for mode, icon in theme_icons.items() %}
           <svg class="icon icon-{{ mode }}" viewBox="0 0 24 24" aria-hidden="true">{{ icon | safe }}</svg>
           {% endfor %}
@@ -78,26 +81,44 @@
           {% endfor %}
           <svg class="icon chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         </button>
-        <div class="theme-menu" id="theme-menu" role="menu" aria-label="Color theme" hidden>
+        {# Plain radios: without JS the theme follows the checked one via :has()
+           (see style.css); with JS it's remembered and crossfaded (see app.js). #}
+        <fieldset class="theme-menu" id="theme-menu" popover>
+          <legend class="visually-hidden">Color theme</legend>
           {% for mode, icon in theme_icons.items() %}
-          <button type="button" role="menuitemradio" aria-checked="false" data-mode="{{ mode }}">
+          <label class="theme-option">
+            <input type="radio" name="theme" id="theme-{{ mode }}" value="{{ mode }}"{% if mode == "system" %} checked{% endif %}>
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">{{ icon | safe }}</svg>
             <span>{{ mode | capitalize }}</span>
             <svg class="icon check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
-          </button>
+          </label>
           {% endfor %}
-        </div>
+        </fieldset>
       </div>
     </div>
-    <nav class="wrap category-nav" aria-label="Categories">
-      {% for category in categories %}
-      <a href="{{ root }}{{ category.slug }}/" style="--vt-name: nav-{{ category.slug }}"{% if category is sameas current %} aria-current="page"{% endif %}>
-        {% if category is sameas current %}<span class="nav-pill" aria-hidden="true"></span>{% endif %}
-        {% include "icons/" ~ category.slug ~ ".svg" %}
-        {{ category.name }}
-      </a>
-      {% endfor %}
-    </nav>
+    <div class="wrap nav-row">
+      {# Narrow screens only: opens the nav below as a popover. #}
+      <button class="category-toggle" type="button" popovertarget="category-nav">
+        {% if current %}
+        {% include "icons/" ~ current.slug ~ ".svg" %}
+        <span>{{ current.name }}</span>
+        {% else %}
+        <svg class="cat-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
+        <span>Categories</span>
+        {% endif %}
+        <svg class="icon chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      {# A row on wide screens, a dropdown popover on narrow ones (see style.css). #}
+      <nav class="category-nav" id="category-nav" popover aria-label="Categories">
+        {% for category in categories %}
+        <a href="{{ root }}{{ category.slug }}/" style="--vt-name: nav-{{ category.slug }}"{% if category is sameas current %} aria-current="page"{% endif %}>
+          {% if category is sameas current %}<span class="nav-pill" aria-hidden="true"></span>{% endif %}
+          {% include "icons/" ~ category.slug ~ ".svg" %}
+          {{ category.name }}
+        </a>
+        {% endfor %}
+      </nav>
+    </div>
   </header>
 
   <main class="wrap">

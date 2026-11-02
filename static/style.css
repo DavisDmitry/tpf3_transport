@@ -17,8 +17,13 @@
   --r5-bg: #d6efe4; --r5-fg: #11603f;
 }
 
+/* Dark palette. With JS (.js on <html>) the theme comes from data-theme, set
+   before first paint and changed inside a crossfade. Without JS it follows the
+   checked radio in the theme menu. The radio rules are off with JS, or checking
+   a radio would recolor the page before the crossfade could snapshot it. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root.js:not([data-theme="light"]),
+  :root:not(.js):not(:has(#theme-light:checked)) {
     color-scheme: dark;
     --bg: #15171a;
     --surface: #1d2024;
@@ -38,7 +43,8 @@
   }
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+:root:not(.js):has(#theme-dark:checked) {
   color-scheme: dark;
   --bg: #15171a;
   --surface: #1d2024;
@@ -145,23 +151,28 @@ a { color: inherit; }
   animation-timing-function: ease-in-out;
 }
 
-/* The toggle's icon and label follow the root data-theme, which the <head>
-   script sets before first paint, so the button never changes after load. */
+/* The toggle's icon and label follow the current theme the same way as the
+   palette: data-theme with JS (set before first paint, so the button never
+   changes after load), the checked radio without. */
 .theme-label { display: none; }
 
-:root:not([data-theme]) .theme-toggle .label-system,
+:root.js:not([data-theme]) .theme-toggle .label-system,
 :root[data-theme="light"] .theme-toggle .label-light,
-:root[data-theme="dark"] .theme-toggle .label-dark { display: inline; }
+:root[data-theme="dark"] .theme-toggle .label-dark,
+:root:not(.js):has(#theme-system:checked) .theme-toggle .label-system,
+:root:not(.js):has(#theme-light:checked) .theme-toggle .label-light,
+:root:not(.js):has(#theme-dark:checked) .theme-toggle .label-dark { display: inline; }
 
-:root:not([data-theme]) .theme-toggle .icon-system,
+:root.js:not([data-theme]) .theme-toggle .icon-system,
 :root[data-theme="light"] .theme-toggle .icon-light,
 :root[data-theme="dark"] .theme-toggle .icon-dark,
+:root:not(.js):has(#theme-system:checked) .theme-toggle .icon-system,
+:root:not(.js):has(#theme-light:checked) .theme-toggle .icon-light,
+:root:not(.js):has(#theme-dark:checked) .theme-toggle .icon-dark,
 .theme-toggle .chevron,
 .theme-menu .icon { display: block; }
 
-.theme-picker { position: relative; }
-
-.theme-toggle { padding-right: 8px; }
+.theme-toggle { padding-right: 8px; anchor-name: --theme-toggle; }
 
 .theme-toggle .chevron {
   width: 14px;
@@ -170,60 +181,105 @@ a { color: inherit; }
   transition: transform 0.15s;
 }
 
-.theme-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+.theme-picker:has(.theme-menu:popover-open) .chevron { transform: rotate(180deg); }
 
+/* A native popover (top layer): replace the UA box (centered) with one under
+   the toggle, right-aligned. */
 .theme-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
+  inset: auto;
+  margin: 0;
+  position-anchor: --theme-toggle;
+  top: calc(anchor(bottom) + 6px);
+  right: anchor(right);
   min-width: 150px;
   padding: 4px;
+  overflow: visible;
+  color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: var(--shadow), 0 8px 24px rgb(0 0 0 / 0.12);
-  z-index: 20;
+  transform-origin: top right;
 }
 
-.theme-menu button {
+/* Without anchor positioning: under the header's right edge. */
+@supports not (anchor-name: --a) {
+  .theme-menu { top: 58px; right: max(16px, (100vw - 1600px) / 2 + 16px); }
+}
+
+/* Dropdown open/close animation, shared by the theme menu and the collapsed
+   category menu: fade in while dropping and growing slightly from the toggle,
+   and back out on close (display/overlay transition discretely so the exit
+   animation can play). */
+.theme-menu {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.97);
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease,
+    overlay 150ms allow-discrete,
+    display 150ms allow-discrete;
+}
+
+.theme-menu:popover-open { opacity: 1; transform: none; }
+
+@starting-style {
+  .theme-menu:popover-open { opacity: 0; transform: translateY(-4px) scale(0.97); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-menu { transition: none; }
+}
+
+/* Each option is a label around a visually hidden radio; the label shows its
+   hover, focus and checked states. */
+.theme-option {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
   padding: 7px 9px;
-  border: 0;
   border-radius: 5px;
-  background: none;
   color: var(--text);
-  font: inherit;
   font-size: 14px;
-  text-align: left;
   cursor: pointer;
 }
 
-.theme-menu button:hover,
-.theme-menu button:focus-visible {
-  background: var(--surface-2);
-  outline: none;
+.theme-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.theme-menu button span { flex: 1; }
+.theme-option:hover,
+.theme-option:has(:focus-visible) { background: var(--surface-2); }
+
+.theme-option span { flex: 1; }
 
 .theme-menu .check { visibility: hidden; color: var(--accent); }
 
-.theme-menu [aria-checked="true"] { color: var(--accent); font-weight: 600; }
+.theme-option:has(:checked) { color: var(--accent); font-weight: 600; }
 
-.theme-menu [aria-checked="true"] .check { visibility: visible; }
+.theme-option:has(:checked) .check { visibility: visible; }
 
-.category-nav {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 8px;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.category-nav::-webkit-scrollbar { display: none; }
+/* Category nav: one element for both layouts. It has the popover attribute:
+   on wide screens it's forced visible as a plain row; on narrow ones (the row
+   needs ≈1350px with the 14px system font, plus some slack) it stays a closed
+   popover that the toggle opens as a dropdown. Popovers close on outside click
+   and Esc by themselves, so no JS is involved. */
+.nav-row { padding-bottom: 8px; }
 
 .cat-icon {
   flex: none;
@@ -239,7 +295,7 @@ a { color: inherit; }
 .category-nav a {
   position: relative;
   isolation: isolate;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
   flex: none;
@@ -265,6 +321,113 @@ a { color: inherit; }
   background: var(--accent-soft);
 }
 
+@media (min-width: 1400px) {
+  .category-toggle { display: none; }
+
+  /* Undo the UA popover styles: always shown, in flow, no box. */
+  .category-nav {
+    position: static;
+    display: flex;
+    gap: 4px;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 1399.98px) {
+  .category-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    anchor-name: --category-toggle;
+  }
+
+  .category-toggle .cat-icon { color: var(--accent); }
+
+  .category-toggle .chevron {
+    display: block;
+    width: 14px;
+    height: 14px;
+    color: var(--muted);
+    transition: transform 0.15s;
+  }
+
+  .nav-row:has(.category-nav:popover-open) .chevron { transform: rotate(180deg); }
+
+  .category-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* The dropdown: replace the UA popover box (centered) with one under the toggle. */
+  .category-nav {
+    inset: auto;
+    margin: 0;
+    position-anchor: --category-toggle;
+    top: calc(anchor(bottom) + 6px);
+    left: anchor(left);
+    min-width: 240px;
+    max-height: calc(100dvh - 120px);
+    overflow-y: auto;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow), 0 8px 24px rgb(0 0 0 / 0.12);
+  }
+
+  /* Only when open, so the UA keeps a closed popover hidden. */
+  .category-nav:popover-open {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* Same open/close animation as the theme menu, growing from the left. */
+  .category-nav {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+    transform-origin: top left;
+    transition:
+      opacity 150ms ease,
+      transform 150ms ease,
+      overlay 150ms allow-discrete,
+      display 150ms allow-discrete;
+  }
+
+  .category-nav:popover-open { opacity: 1; transform: none; }
+
+  @starting-style {
+    .category-nav:popover-open { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .category-nav { transition: none; }
+  }
+
+  .category-nav a { gap: 10px; padding: 8px 10px; color: var(--text); }
+
+  .category-nav a[aria-current="page"] { font-weight: 600; }
+
+  /* Without anchor positioning: just under the collapsed header. */
+  @supports not (anchor-name: --a) {
+    .category-nav { top: 100px; left: 16px; }
+  }
+}
+
 /* Page transitions between pages (cross-document view transitions; ignored where
    unsupported). Scoped to the page-nav type so the theme and view switch
    transitions on a single page are unaffected.
@@ -280,11 +443,14 @@ a { color: inherit; }
 
 :root:active-view-transition-type(page-nav) .site-header { view-transition-name: site-header; }
 
-:root:active-view-transition-type(page-nav) .nav-pill { view-transition-name: nav-pill; }
+/* Only the full row has a pill to slide; the collapsed dropdown is closed by then. */
+@media (min-width: 1400px) {
+  :root:active-view-transition-type(page-nav) .nav-pill { view-transition-name: nav-pill; }
 
-:root:active-view-transition-type(page-nav) .category-nav a {
-  view-transition-name: var(--vt-name);
-  view-transition-class: nav-link;
+  :root:active-view-transition-type(page-nav) .category-nav a {
+    view-transition-name: var(--vt-name);
+    view-transition-class: nav-link;
+  }
 }
 
 /* The category icon flies between its index card and the category heading.

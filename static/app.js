@@ -1,22 +1,19 @@
 "use strict";
 
 // Theme: "system" follows prefers-color-scheme, "light"/"dark" override it.
+// The menu is plain radios in a native popover, so switching works without JS
+// (CSS follows the checked radio). With JS, the theme lives in data-theme on
+// <html> instead: it's remembered across pages and crossfaded on change.
 (() => {
-  const MODES = ["system", "light", "dark"];
-  const picker = document.getElementById("theme-picker");
-  if (!picker) return;
-  const button = picker.querySelector(".theme-toggle");
-  const menu = picker.querySelector(".theme-menu");
-  const items = Array.from(menu.querySelectorAll("[role=menuitemradio]"));
+  const menu = document.getElementById("theme-menu");
+  if (!menu) return;
+  const radios = Array.from(menu.querySelectorAll('input[name="theme"]'));
 
-  const read = () => {
-    try {
-      const value = localStorage.getItem("theme");
-      return MODES.includes(value) ? value : "system";
-    } catch (e) {
-      return "system";
-    }
-  };
+  let saved = "system";
+  try {
+    saved = localStorage.getItem("theme") || "system";
+  } catch (e) {}
+  (radios.find((radio) => radio.value === saved) || radios[0]).checked = true;
 
   const apply = (mode) => {
     const root = document.documentElement;
@@ -26,77 +23,46 @@
       if (mode === "system") localStorage.removeItem("theme");
       else localStorage.setItem("theme", mode);
     } catch (e) {}
-    picker.dataset.mode = mode;
-    items.forEach((item) => item.setAttribute("aria-checked", item.dataset.mode === mode));
   };
 
-  const open = () => {
-    menu.hidden = false;
-    button.setAttribute("aria-expanded", "true");
-    items.find((item) => item.dataset.mode === picker.dataset.mode).focus();
-  };
-
-  const close = (refocus) => {
-    if (menu.hidden) return;
-    menu.hidden = true;
-    button.setAttribute("aria-expanded", "false");
-    if (refocus) button.focus();
-  };
-
-  // Crossfade between the old and new theme where the View Transitions API exists;
-  // switch instantly otherwise or when the user prefers reduced motion.
-  // Keyboard users get focus back on the toggle; mouse users get no leftover focus.
-  const choose = (mode, fromKeyboard) => {
-    const update = () => {
-      apply(mode);
-      close(fromKeyboard);
-      if (!fromKeyboard) document.activeElement?.blur();
-    };
+  // Crossfade where the View Transitions API exists; switch instantly otherwise
+  // or when the user prefers reduced motion. Arrow keys move between radios and
+  // preview each theme right away.
+  menu.addEventListener("change", (e) => {
+    const mode = e.target.value;
     const animate =
-      mode !== picker.dataset.mode &&
       document.startViewTransition &&
       !matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (animate) document.startViewTransition(update);
-    else update();
-  };
+    if (animate) document.startViewTransition(() => apply(mode));
+    else apply(mode);
+  });
 
-  apply(read());
+  menu.addEventListener("toggle", (e) => {
+    if (e.newState === "open") radios.find((radio) => radio.checked)?.focus();
+  });
 
-  button.addEventListener("click", () => (menu.hidden ? open() : close(false)));
-  // A click from Enter/Space has detail 0; a mouse click counts presses.
-  items.forEach((item) =>
-    item.addEventListener("click", (e) => choose(item.dataset.mode, e.detail === 0))
-  );
-  menu.addEventListener("keydown", (e) => {
-    const index = items.indexOf(document.activeElement);
-    const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
-    if (step) {
-      e.preventDefault();
-      items[(index + step + items.length) % items.length].focus();
-    } else if (e.key === "Home" || e.key === "End") {
-      e.preventDefault();
-      items[e.key === "Home" ? 0 : items.length - 1].focus();
+  // A mouse click picks and closes, leaving no focus behind; Enter closes from
+  // the keyboard, returning focus to the toggle (as Esc does natively). The
+  // label's own click has detail > 0; its forwarded click on the radio has 0.
+  menu.addEventListener("click", (e) => {
+    if (e.detail > 0 && e.target.closest(".theme-option")) {
+      menu.hidePopover();
+      document.activeElement?.blur();
     }
   });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") close(true);
+  menu.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      menu.hidePopover();
+    }
   });
-  document.addEventListener("click", (e) => {
-    if (!picker.contains(e.target)) close(false);
-  });
-  picker.addEventListener("focusout", (e) => {
-    if (!picker.contains(e.relatedTarget)) close(false);
-  });
-  // Safari doesn't focus buttons on click: pressing a menu item would blur the
-  // focused item with no relatedTarget, closing the menu before the click lands.
-  // Keeping focus where it is on mousedown avoids that.
-  picker.addEventListener("mousedown", (e) => e.preventDefault());
 })();
 
-// Category nav: remember whether the clicked category is right or left of the
-// current one, so the next page slides in from that side (read in <head>).
-(() => {
-  const links = Array.from(document.querySelectorAll(".category-nav a"));
+// Category nav (a row or a dropdown, same element): remember whether the clicked
+// category is right or left of the current one, so the next page slides in from
+// that side (read in <head>).
+document.querySelectorAll(".category-nav").forEach((list) => {
+  const links = Array.from(list.querySelectorAll("a"));
   const current = links.findIndex((a) => a.getAttribute("aria-current") === "page");
   if (current < 0) return;
   links.forEach((link, index) =>
@@ -113,7 +79,7 @@
       } catch (err) {}
     })
   );
-})();
+});
 
 // Vehicle table: sorting and filtering.
 (() => {
