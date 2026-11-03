@@ -135,6 +135,8 @@
         <td class="center{{ " " ~ role if role }}" data-sort="{{ cell.sort }}"><span class="rating rating-{{ cell.rating }}" title="{{ cell.title }}">{{ cell.display }}</span></td>
         {% elif cell.sort is not none %}
         <td class="num{{ " " ~ role if role }}" data-sort="{{ cell.sort }}"{{ extra }}>{{ cell.display }}</td>
+        {% elif column.key == "Payload" and cargo_types.for_payload(cell.display) %}
+        <td{% if role %} class="{{ role }}"{% endif %}><button type="button" class="payload-hint" popovertarget="cargo-{{ slugify(cell.display) }}" popovertargetaction="show" interestfor="cargo-{{ slugify(cell.display) }}">{{ cell.display }}</button></td>
         {% else %}
         <td{% if role %} class="{{ role }}"{% endif %}{{ extra }}>{{ cell.display }}</td>
         {% endif %}
@@ -146,4 +148,22 @@
 </div>
 
 <p class="empty" id="empty" hidden>No vehicles match these filters.</p>
+
+{# Cargo each payload carries: one popover per payload type, shared by all rows.
+   No JS: a click opens it (popovertarget; "show", so clicking a hover-opened
+   hint doesn't close it), and where interest invokers are supported, hover,
+   focus or a long press do too (interestfor). #}
+{% for payload in current.payloads %}
+{% set cargos = cargo_types.for_payload(payload) %}
+{% if cargos %}
+<div class="cargo-hint" id="cargo-{{ slugify(payload) }}" popover>
+  <p class="cargo-hint-title">{{ payload }}{% if payload == "Everything" %} <span>passengers and all cargo</span>{% endif %}</p>
+  <ul>
+    {% for cargo in cargos %}
+    <li><img src="{{ root }}static/cargo/{{ slugify(cargo.name) }}.png" width="32" height="32" alt="{{ cargo.name }}" title="{{ cargo.name }}" loading="lazy" decoding="async"></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endfor %}
 {% endblock %}

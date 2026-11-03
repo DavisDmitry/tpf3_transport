@@ -76,6 +76,8 @@ PAYLOAD_COVERS: Mapping[str, tuple[str, ...]] = MappingProxyType(
         "Everything": ("Passengers", "All Cargo", *CARGO),
     }
 )
+# Payloads whose cargo hint would just list every cargo type.
+PAYLOAD_NO_HINT = frozenset({"All Cargo"})
 PAYLOAD_ORDER = ("Passengers", *CARGO, "No Liquid", "All Cargo", "Everything")
 
 # Each rating column is merged with its numeric value column(s) into one cell:
@@ -190,6 +192,16 @@ class Category:
         return ", ".join(self.columns[i].short_label.lower() for i, _ in self.card.hero)
 
     @property
+    def payloads(self) -> tuple[str, ...]:
+        """Payload values shown in the table (the filter adds the covered ones)."""
+        shown = {
+            v.attrs["payload"].split("|")[0]
+            for v in self.vehicles
+            if "payload" in v.attrs
+        }
+        return ordered(shown, PAYLOAD_ORDER)
+
+    @property
     def first_year(self) -> int:
         return min(int(v.attrs["start"]) for v in self.vehicles)
 
@@ -227,6 +239,13 @@ class CargoTypes:
     slug: str
     cargos: tuple[Cargo, ...]
     filters: Mapping[str, tuple[str, ...]]
+
+    def for_payload(self, payload: str) -> tuple[Cargo, ...]:
+        """Cargo shown in a payload's hint; none for "All Cargo", which is self-explanatory."""
+        if payload in PAYLOAD_NO_HINT:
+            return ()
+        covered = (payload, *PAYLOAD_COVERS.get(payload, ()))
+        return tuple(c for c in self.cargos if c.payload in covered)
 
 
 def parse_number(raw: str) -> float | int | None:

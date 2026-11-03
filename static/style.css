@@ -967,6 +967,87 @@ th button:focus-visible {
 
 .empty { margin: 0; padding: 24px; text-align: center; color: var(--muted); }
 
+/* Payload values open a popover with the cargo they carry. */
+.payload-hint {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline dotted var(--muted);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  /* Hover delays for interestfor: open soon, close late enough to reach the hint. */
+  interest-delay: 150ms 250ms;
+}
+
+.payload-hint:hover { color: var(--accent); }
+
+.payload-hint:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* One popover per payload type, anchored to whichever value opened it (the
+   invoker is its implicit anchor), below it or flipped to fit. */
+.cargo-hint {
+  inset: auto;
+  margin: 6px 0;
+  position-area: bottom span-right;
+  position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  width: max-content;
+  max-width: min(332px, 100vw - 32px);
+  padding: 10px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow), 0 8px 24px rgb(0 0 0 / 0.12);
+  opacity: 0;
+  transform: translateY(-4px) scale(0.97);
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease,
+    overlay 150ms allow-discrete,
+    display 150ms allow-discrete;
+}
+
+.cargo-hint:popover-open { opacity: 1; transform: none; }
+
+@starting-style {
+  .cargo-hint:popover-open { opacity: 0; transform: translateY(-4px) scale(0.97); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cargo-hint { transition: none; }
+}
+
+/* Without anchor positioning: the UA's centered popover box. */
+@supports not (anchor-name: --a) {
+  .cargo-hint { inset: 0; margin: auto; }
+}
+
+.cargo-hint-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.cargo-hint-title span { font-weight: 400; }
+
+.cargo-hint ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cargo-hint img { display: block; }
+
 /* Vehicle cards: the same table, its rows laid out as cards. These are the
    generic styles; each category page adds a <style> that places its columns
    in the card grid and sets their labels (card_styles in build.py). Cells carry
