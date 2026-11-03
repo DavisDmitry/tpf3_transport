@@ -18,6 +18,8 @@ SITE_URL = "https://tpf3.dmitrydavis.xyz"
 SITE_NAME = "TF3 Vehicle Database"
 # Cloudflare Web Analytics site token (public: it ends up in every page).
 ANALYTICS_TOKEN = "14a0327c620d4b4297c603741ae9411e"
+# Google Search Console ownership token, checked on the home page.
+GOOGLE_VERIFICATION = "6ow0ZLbGPN3Ri-EfksuYPyK-3WBS-UaU6RkUhnyrPEI"
 
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
@@ -456,6 +458,7 @@ def build(out: Path) -> None:
         site_url=SITE_URL,
         site_name=SITE_NAME,
         analytics_token=ANALYTICS_TOKEN,
+        google_verification=GOOGLE_VERIFICATION,
     )
     env.filters["hero_value"] = hero_value
     env.globals["card_styles"] = card_styles
