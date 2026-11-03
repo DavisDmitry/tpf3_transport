@@ -1,0 +1,37 @@
+Cargo      , Manufacturer               , Consumer                                                                                   , Type                , Specialization
+Beverages  , Brewery                    , Commercial District                                                                        , End Product         , Goods
+Books      , Printing Press             , Commercial District                                                                        , End Product         , Goods
+Bricks     , Bricks Works               , Industrial District                                                                        , End Product         , Goods
+Canned Food, Food Factory               , Commercial District                                                                        , End Product         , Goods
+Cement     , Cement Plant               , Industrial District                                                                        , End Product         , Bulk
+Chemicals  , Oil Refinery               , Chemical Plant                                                                             , Intermediate Product, Liquid
+Clay       , Clay Pit                   , Bricks Works                                                                               , Raw Material        , Bulk
+Clothes    , Textile Factory            , Commercial District                                                                        , End Product         , Goods
+Coal       , Coal Mine                  , Steel Mill                                                                                 , Raw Material        , Bulk
+Crude Oil  , Oil Platform; Oil Well     , Oil Refinery                                                                               , Raw Material        , Liquid
+Dyes       , Chemical Plant             , Textile Factory; Printing Press                                                            , Intermediate Product, Liquid
+Fabric     , Weaving Mill               , Textile Factory                                                                            , Intermediate Product, Goods
+Fertilizer , Chemical Plant             , Cotton Farm; Farm; Rubber Farm                                                             , Booster Product     , Bulk
+Fish       , Fishing Grounds            , Commercial District; Food Factory                                                          , Raw Material        , Goods
+Fuel       , Oil Refinery               , Industrial District                                                                        , End Product         , Liquid
+Furniture  , Furniture Factory          , Industrial District                                                                        , End Product         , Goods
+Glass      , Glass Works                , Furniture Factory; Brewery                                                                 , Intermediate Product, Goods
+Grain      , Farm                       , Livestock Farm                                                                             , Raw Material        , Bulk
+Iron Ore   , Iron Ore Mine              , Steel Mill                                                                                 , Raw Material        , Bulk
+Logs       , Logging Camp               , Saw Mill                                                                                   , Raw Material        , Flatbed
+Machines   , Machine Factory            , Industrial District; Vehicle Factory; Logging Camp; Iron Ore Mine; Oil Well; Sand Excavator, Booster Product     , Flatbed
+Meat       , Livestock Farm             , Commercial District; Food Factory                                                          , Raw Material        , Goods
+Paper      , Paper Mill                 , Printing Press                                                                             , Intermediate Product, Goods
+Planks     , Saw Mill                   , Industrial District; Furniture Factory; Tool Factory                                       , Intermediate Product, Flatbed
+Plastic    , Chemical Plant             , Tool Factory; Machine Factory                                                              , Intermediate Product, Goods
+Rubber     , Rubber Farm                , Tire Factory                                                                               , Raw Material        , Liquid
+Sand       , Sand Excavator; Sand Pit   , Glass Works                                                                                , Raw Material        , Bulk
+Sawdust    , Saw Mill                   , Paper Mill                                                                                 , Intermediate Product, Bulk
+Sheet Metal, Steel Mill                 , Food Factory; Vehicle Factory                                                              , Intermediate Product, Flatbed
+Steel      , Steel Mill                 , Machine Factory                                                                            , Intermediate Product, Flatbed
+Stone      , Quarry                     , Cement Plant                                                                               , Raw Material        , Bulk
+Tires      , Tire Factory               , Vehicle Factory                                                                            , Intermediate Product, Goods
+Tools      , Tool Factory               , Industrial District; Clay Pit; Coal Mine; Fishing Grounds; Oil Platform; Quarry; Sand Pit  , Booster Product     , Goods
+Vegetables , Farm                       , Commercial District                                                                        , End Product         , Goods
+Vehicles   , Vehicle Factory            , Industrial District                                                                        , End Product         , Flatbed
+Wool       , Cotton Farm; Livestock Farm, Weaving Mill                                                                               , Raw Material        , Goods
