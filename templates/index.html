@@ -38,5 +38,18 @@
     </a>
   </li>
   {% endfor %}
+  <li>
+    <a class="category-card" href="{{ cargo_types.slug }}/">
+      <span class="card-icon">
+        <span class="vt-icon" style="--vt-name: icon-{{ cargo_types.slug }}">{% include "icons/" ~ cargo_types.slug ~ ".svg" %}</span>
+      </span>
+      <span class="card-title">{{ cargo_types.name }}</span>
+      <span class="card-count">{{ cargo_types.cargos | length }} <small>cargo types</small></span>
+      <span class="card-years">Producers and consumers</span>
+      <span class="card-tags">
+        {% for payload in cargo_types.filters.Payload %}<span class="tag">{{ payload }}</span>{% endfor %}
+      </span>
+    </a>
+  </li>
 </ul>
 {% endblock %}

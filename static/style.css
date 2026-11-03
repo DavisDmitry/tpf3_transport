@@ -276,7 +276,7 @@ a { color: inherit; }
 
 /* Category nav: one element for both layouts. It has the popover attribute:
    on wide screens it's forced visible as a plain row; on narrow ones (the row
-   needs ≈1350px with the 14px system font, plus some slack) it stays a closed
+   needs ≈1490px with the 14px system font, plus some slack) it stays a closed
    popover that the toggle opens as a dropdown. Popovers close on outside click
    and Esc by themselves, so no JS is involved. */
 .nav-row { padding-bottom: 8px; }
@@ -321,7 +321,7 @@ a { color: inherit; }
   background: var(--accent-soft);
 }
 
-@media (min-width: 1400px) {
+@media (min-width: 1560px) {
   .category-toggle { display: none; }
 
   /* Undo the UA popover styles: always shown, in flow, no box. */
@@ -340,7 +340,7 @@ a { color: inherit; }
   }
 }
 
-@media (max-width: 1399.98px) {
+@media (max-width: 1559.98px) {
   .category-toggle {
     display: inline-flex;
     align-items: center;
@@ -444,7 +444,7 @@ a { color: inherit; }
 :root:active-view-transition-type(page-nav) .site-header { view-transition-name: site-header; }
 
 /* Only the full row has a pill to slide; the collapsed dropdown is closed by then. */
-@media (min-width: 1400px) {
+@media (min-width: 1560px) {
   :root:active-view-transition-type(page-nav) .nav-pill { view-transition-name: nav-pill; }
 
   :root:active-view-transition-type(page-nav) .category-nav a {
@@ -543,6 +543,12 @@ a { color: inherit; }
 }
 
 .intro p { margin: 0; color: var(--muted); }
+
+.intro .source { margin-top: 4px; font-size: 13px; }
+
+.intro .source a { color: inherit; }
+
+.intro .source a:hover { color: var(--accent); }
 
 /* Index */
 
@@ -750,7 +756,7 @@ th button:focus-visible {
    make the column headers plain labels). The view switch still works. */
 :root:not(.js) .filters-form { display: none; }
 
-:root:not(.js) .vehicles thead th button { pointer-events: none; cursor: default; }
+:root:not(.js) .data-table thead th button { pointer-events: none; cursor: default; }
 
 /* Table ↔ cards switch (app.js wraps it in a view transition): the old list
    fades out, the new one fades in rising slightly; the rest of the page crossfades. */
@@ -840,26 +846,26 @@ th button:focus-visible {
   box-shadow: var(--shadow);
 }
 
-.vehicles {
+.data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
-.vehicles th,
-.vehicles td {
+.data-table th,
+.data-table td {
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
   text-align: left;
   white-space: nowrap;
 }
 
-.vehicles .num { text-align: right; }
+.data-table .num { text-align: right; }
 
-.vehicles .center { text-align: center; }
+.data-table .center { text-align: center; }
 
-.vehicles thead th {
+.data-table thead th {
   background: var(--surface-2);
   font-size: 12px;
   font-weight: 600;
@@ -868,14 +874,14 @@ th button:focus-visible {
   vertical-align: middle;
 }
 
-.vehicles thead th,
-.vehicles thead th.num { text-align: center; }
+.data-table thead th,
+.data-table thead th.num { text-align: center; }
 
-.vehicles thead th:first-child { text-align: left; }
+.data-table thead th:first-child { text-align: left; }
 
-.vehicles thead th:first-child button { padding-left: 8px; }
+.data-table thead th:first-child button { padding-left: 8px; }
 
-.vehicles thead th button {
+.data-table thead th button {
   all: unset;
   box-sizing: border-box;
   display: block;
@@ -888,7 +894,7 @@ th button:focus-visible {
 }
 
 /* The sort arrow sits in the right padding so it never wraps the label. */
-.vehicles thead th button::after {
+.data-table thead th button::after {
   position: absolute;
   right: 3px;
   top: 50%;
@@ -896,13 +902,13 @@ th button:focus-visible {
   font-size: 9px;
 }
 
-.vehicles thead th[aria-sort="ascending"] button::after { content: "▲"; }
-.vehicles thead th[aria-sort="descending"] button::after { content: "▼"; }
+.data-table thead th[aria-sort="ascending"] button::after { content: "▲"; }
+.data-table thead th[aria-sort="descending"] button::after { content: "▼"; }
 
-.vehicles thead th[aria-sort="ascending"],
-.vehicles thead th[aria-sort="descending"] { color: var(--accent); }
+.data-table thead th[aria-sort="ascending"],
+.data-table thead th[aria-sort="descending"] { color: var(--accent); }
 
-.vehicles tbody th {
+.data-table tbody th {
   font-weight: 600;
   white-space: normal;
   min-width: 140px;
@@ -913,16 +919,16 @@ th button:focus-visible {
   z-index: 1;
 }
 
-.vehicles thead th:first-child {
+.data-table thead th:first-child {
   position: sticky;
   left: 0;
   z-index: 2;
 }
 
-.vehicles tbody tr:hover td,
-.vehicles tbody tr:hover th { background: var(--row-hover); }
+.data-table tbody tr:hover td,
+.data-table tbody tr:hover th { background: var(--row-hover); }
 
-.vehicles tbody tr:last-child > * { border-bottom: 0; }
+.data-table tbody tr:last-child > * { border-bottom: 0; }
 
 .rating {
   display: inline-block;
@@ -935,13 +941,29 @@ th button:focus-visible {
   white-space: nowrap;
 }
 
-.vehicles .rating { cursor: help; }
+.data-table .rating { cursor: help; }
 
 .rating-1 { background: var(--r1-bg); color: var(--r1-fg); }
 .rating-2 { background: var(--r2-bg); color: var(--r2-fg); }
 .rating-3 { background: var(--r3-bg); color: var(--r3-fg); }
 .rating-4 { background: var(--r4-bg); color: var(--r4-fg); }
 .rating-5 { background: var(--r5-bg); color: var(--r5-fg); }
+
+/* Cargo types: one industry per line, so long lists grow down, not across. */
+.cargo .industries { white-space: normal; min-width: 150px; }
+
+.cargo tbody > tr > * { vertical-align: top; }
+
+/* 48px game icons at 2x; the icon hangs left of the name so wrapped names align. */
+.cargo tbody th,
+.cargo thead th:first-child button { padding-left: 40px; }
+
+.cargo-icon {
+  float: left;
+  margin: -2px 0 0 -32px;
+}
+
+.cargo .industries span { display: block; }
 
 .empty { margin: 0; padding: 24px; text-align: center; color: var(--muted); }
 
@@ -951,7 +973,7 @@ th button:focus-visible {
    a role class (card-tag, card-hero, card-spec, card-rating). The view is cards
    per data-view with JS, or the checked view radio without it. */
 :root:is([data-view="cards"], :not(.js):has(#view-cards:checked)) {
-  .table-wrap {
+  .table-wrap:has(.vehicles) {
     overflow: visible;
     background: none;
     border: 0;

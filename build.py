@@ -6,7 +6,7 @@ import hashlib
 import json
 import re
 import shutil
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, Sequence, Set
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
@@ -98,6 +98,17 @@ RATINGS: Mapping[str, int] = MappingProxyType(
     {"Very Poor": 1, "Poor": 2, "Mediocre": 3, "Good": 4, "Very Good": 5}
 )
 
+CARGO_TYPES = "Cargo Types"
+# Cargo types in production-chain order, for the Type filter.
+CARGO_KINDS = (
+    "Raw Material",
+    "Intermediate Product",
+    "End Product",
+    "Booster Product",
+)
+# Separates industries in the Manufacturer and Consumer cells of Cargo Types.csv.
+LIST_SEPARATOR = ";"
+
 # End Year 0 (or empty) means the vehicle is never retired; sort it after every real year.
 PRESENT_YEAR = 9999
 
@@ -186,6 +197,36 @@ class Category:
     def last_year(self) -> str:
         last = max(int(v.attrs["end"]) for v in self.vehicles)
         return "present" if last == PRESENT_YEAR else str(last)
+
+
+@dataclass(frozen=True, slots=True)
+class Cargo:
+    name: str
+    kind: str
+    payload: str
+    producers: tuple[str, ...]
+    consumers: tuple[str, ...]
+
+    @property
+    def attrs(self) -> Mapping[str, str]:
+        """Row data for search and filters (see app.js); lists are "|"-separated."""
+        industries = (*self.producers, *self.consumers)
+        return MappingProxyType(
+            {
+                "name": " ".join((self.name, *industries)).lower(),
+                "type": self.kind,
+                "payload": self.payload,
+                "industry": "|".join(industries),
+            }
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class CargoTypes:
+    name: str
+    slug: str
+    cargos: tuple[Cargo, ...]
+    filters: Mapping[str, tuple[str, ...]]
 
 
 def parse_number(raw: str) -> float | int | None:
@@ -431,12 +472,54 @@ def load_category(name: str) -> Category:
     )
 
 
+def ordered(values: Set[str], order: Sequence[str]) -> tuple[str, ...]:
+    """Values in the given order; any not listed there follow alphabetically."""
+    return (*(v for v in order if v in values), *sorted(values - set(order)))
+
+
+def split_list(raw: str) -> tuple[str, ...]:
+    return tuple(item.strip() for item in raw.split(LIST_SEPARATOR) if item.strip())
+
+
+def load_cargo_types() -> CargoTypes:
+    with (DATA_DIR / f"{CARGO_TYPES}.csv").open(encoding="utf-8", newline="") as f:
+        reader = csv.reader(f, skipinitialspace=True)
+        keys = tuple(h.strip() for h in next(reader))
+        rows = tuple(
+            {key: raw.strip() for key, raw in zip(keys, row, strict=True)}
+            for row in reader
+            if any(cell.strip() for cell in row)
+        )
+    cargos = tuple(
+        Cargo(
+            name=row["Cargo"],
+            kind=row["Type"],
+            payload=row["Specialization"],
+            producers=split_list(row["Manufacturer"]),
+            consumers=split_list(row["Consumer"]),
+        )
+        for row in rows
+    )
+    filters = {
+        "Type": ordered({c.kind for c in cargos}, CARGO_KINDS),
+        "Payload": ordered({c.payload for c in cargos}, CARGO),
+        "Industry": ordered(
+            {i for c in cargos for i in (*c.producers, *c.consumers)}, ()
+        ),
+    }
+    return CargoTypes(
+        CARGO_TYPES, slugify(CARGO_TYPES), cargos, MappingProxyType(filters)
+    )
+
+
 def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()[:10]
 
 
 def build(out: Path) -> None:
     categories = tuple(load_category(name) for name in CATEGORIES)
+    cargo_types = load_cargo_types()
+    sections: tuple[Category | CargoTypes, ...] = (*categories, cargo_types)
 
     if out.exists():
         shutil.rmtree(out)
@@ -451,8 +534,11 @@ def build(out: Path) -> None:
     )
     env.globals.update(
         categories=categories,
+        cargo_types=cargo_types,
+        # Header nav entries: the vehicle categories, then cargo types.
+        sections=sections,
         total=sum(len(c.vehicles) for c in categories),
-        version={p.name: file_hash(p) for p in STATIC_DIR.iterdir()},
+        version={p.name: file_hash(p) for p in STATIC_DIR.iterdir() if p.is_file()},
         slugify=slugify,
         ratings=RATINGS,
         site_url=SITE_URL,
@@ -470,25 +556,33 @@ def build(out: Path) -> None:
     index = env.get_template("index.html").render(current=None, root="", url=index_url)
     (out / "index.html").write_text(index, encoding="utf-8")
     for category in categories:
-        page = env.get_template("category.html").render(
-            current=category, root="../", url=category_url(category)
-        )
-        (out / category.slug).mkdir()
-        (out / category.slug / "index.html").write_text(page, encoding="utf-8")
+        write_page(out, env, "category.html", category)
         print(f"{category.name:<22} {len(category.vehicles):>3} vehicles")
+    write_page(out, env, "cargo.html", cargo_types)
+    print(f"{cargo_types.name:<22} {len(cargo_types.cargos):>3} cargo types")
 
-    urls = (index_url, *(category_url(c) for c in categories))
+    urls = (index_url, *(section_url(s) for s in sections))
     (out / "sitemap.xml").write_text(sitemap(urls), encoding="utf-8")
     (out / "robots.txt").write_text(
         f"User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}/sitemap.xml\n",
         encoding="utf-8",
     )
 
-    print(f"Built {len(categories) + 1} pages into {out}")
+    print(f"Built {len(sections) + 1} pages into {out}")
 
 
-def category_url(category: Category) -> str:
-    return f"{SITE_URL}/{category.slug}/"
+def write_page(
+    out: Path, env: Environment, template: str, section: Category | CargoTypes
+) -> None:
+    page = env.get_template(template).render(
+        current=section, root="../", url=section_url(section)
+    )
+    (out / section.slug).mkdir()
+    (out / section.slug / "index.html").write_text(page, encoding="utf-8")
+
+
+def section_url(section: Category | CargoTypes) -> str:
+    return f"{SITE_URL}/{section.slug}/"
 
 
 def sitemap(urls: Sequence[str]) -> str:

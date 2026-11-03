@@ -81,9 +81,10 @@ document.querySelectorAll(".category-nav").forEach((list) => {
   );
 });
 
-// Vehicle table: sorting and filtering.
+// Data table (vehicles or cargo types): sorting and filtering. The cargo page
+// has no year field, sort select or view switch.
 (() => {
-  const table = document.getElementById("vehicles");
+  const table = document.querySelector(".data-table");
   const form = document.getElementById("filters");
   if (!table || !form) return;
 
@@ -96,6 +97,7 @@ document.querySelectorAll(".category-nav").forEach((list) => {
   const sortDir = document.getElementById("sort-dir");
   const count = document.getElementById("count");
   const empty = document.getElementById("empty");
+  const noun = count.dataset.noun || "vehicles";
 
   // Numbers start descending (biggest first), text starts A→Z.
   const firstDir = (index) => (numeric[index] ? "descending" : "ascending");
@@ -114,9 +116,11 @@ document.querySelectorAll(".category-nav").forEach((list) => {
   const applySort = (index, dir) => {
     sort = { index, dir };
     headers.forEach((th, i) => th.setAttribute("aria-sort", i === index ? dir : "none"));
-    sortSelect.value = index < 0 ? "" : String(index);
-    sortDir.disabled = index < 0;
-    sortDir.dataset.dir = dir || "";
+    if (sortSelect) {
+      sortSelect.value = index < 0 ? "" : String(index);
+      sortDir.disabled = index < 0;
+      sortDir.dataset.dir = dir || "";
+    }
 
     let ordered = rows;
     if (index >= 0) {
@@ -142,12 +146,12 @@ document.querySelectorAll(".category-nav").forEach((list) => {
     });
   });
 
-  sortSelect.addEventListener("change", () => {
+  sortSelect?.addEventListener("change", () => {
     const index = sortSelect.value === "" ? -1 : Number(sortSelect.value);
     applySort(index, index < 0 ? null : firstDir(index));
   });
 
-  sortDir.addEventListener("click", () => {
+  sortDir?.addEventListener("click", () => {
     if (sort.index >= 0) applySort(sort.index, otherDir(sort.dir));
   });
 
@@ -157,7 +161,7 @@ document.querySelectorAll(".category-nav").forEach((list) => {
 
   const filter = () => {
     const query = form.elements.q.value.trim().toLowerCase();
-    const year = parseInt(form.elements.year.value, 10);
+    const year = form.elements.year ? parseInt(form.elements.year.value, 10) : NaN;
     let visible = 0;
     for (const row of rows) {
       const show =
@@ -170,7 +174,7 @@ document.querySelectorAll(".category-nav").forEach((list) => {
       row.hidden = !show;
       if (show) visible++;
     }
-    count.textContent = `${visible} of ${rows.length} vehicles`;
+    count.textContent = `${visible} of ${rows.length} ${noun}`;
     empty.hidden = visible > 0;
   };
 

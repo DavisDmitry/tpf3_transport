@@ -113,11 +113,11 @@
       </button>
       {# A row on wide screens, a dropdown popover on narrow ones (see style.css). #}
       <nav class="category-nav" id="category-nav" popover aria-label="Categories">
-        {% for category in categories %}
-        <a href="{{ root }}{{ category.slug }}/" style="--vt-name: nav-{{ category.slug }}"{% if category is sameas current %} aria-current="page"{% endif %}>
-          {% if category is sameas current %}<span class="nav-pill" aria-hidden="true"></span>{% endif %}
-          {% include "icons/" ~ category.slug ~ ".svg" %}
-          {{ category.name }}
+        {% for section in sections %}
+        <a href="{{ root }}{{ section.slug }}/" style="--vt-name: nav-{{ section.slug }}"{% if section is sameas current %} aria-current="page"{% endif %}>
+          {% if section is sameas current %}<span class="nav-pill" aria-hidden="true"></span>{% endif %}
+          {% include "icons/" ~ section.slug ~ ".svg" %}
+          {{ section.name }}
         </a>
         {% endfor %}
       </nav>

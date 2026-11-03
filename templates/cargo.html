@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Cargo Types – Transport Fever 3 Industries & Production Chains{% endblock %}
+{% block description %}All {{ current.cargos | length }} cargo types in Transport Fever 3: which industries produce and consume each one, its place in the production chain and the payload type that carries it.{% endblock %}
+
+{% block structured_data %}
+{{ {
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Transport Fever 3 cargo types",
+  "description": self.description(),
+  "url": url,
+  "isAccessibleForFree": true,
+  "isPartOf": {"@type": "WebSite", "name": site_name, "url": site_url ~ "/"},
+} | tojson }}
+{% endblock %}
+
+{% block content %}
+<section class="intro">
+  <h1>
+    <span class="vt-icon" style="--vt-name: icon-{{ current.slug }}">{% include "icons/" ~ current.slug ~ ".svg" %}</span>
+    {{ current.name }}
+  </h1>
+  <p>{{ current.cargos | length }} cargo types in free play, the industries that produce and consume them, and the payload type that carries each.</p>
+  <p class="source">Source: <a href="https://wiki.transportfever3.com/doku.php?id=gamemanual:simulation:industriescargos#cargo_types_list">official Transport Fever 3 wiki</a>.</p>
+</section>
+
+<div class="filters">
+<form class="filters-form" id="filters" autocomplete="off">
+  <label class="field field-search">
+    <span>Search</span>
+    <input type="search" name="q" placeholder="Cargo or industry">
+  </label>
+  {% for key, values in current.filters.items() %}
+  <label class="field">
+    <span>{{ key }}</span>
+    <select name="{{ slugify(key) }}">
+      <option value="">All</option>
+      {% for value in values %}
+      <option>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  {% endfor %}
+  <button class="reset" type="reset">Reset</button>
+</form>
+</div>
+
+<div class="table-meta">
+  <p class="count" id="count" data-noun="cargo types" aria-live="polite">{{ current.cargos | length }} of {{ current.cargos | length }} cargo types</p>
+</div>
+
+<div class="table-wrap">
+  <table class="data-table cargo">
+    <thead>
+      <tr>
+        {% for label in ("Cargo", "Type", "Payload", "Produced by", "Consumed by") %}
+        <th scope="col" aria-sort="none">
+          <button type="button" data-numeric="false">{{ label }}</button>
+        </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for cargo in current.cargos %}
+      <tr{% for key, value in cargo.attrs.items() %} data-{{ key }}="{{ value }}"{% endfor %}>
+        <th scope="row"><img class="cargo-icon" src="{{ root }}static/cargo/{{ slugify(cargo.name) }}.png" width="24" height="24" alt="" loading="lazy">{{ cargo.name }}</th>
+        <td>{{ cargo.kind }}</td>
+        <td>{{ cargo.payload }}</td>
+        {% for industries in (cargo.producers, cargo.consumers) %}
+        <td class="industries">
+          {% for industry in industries %}<span>{{ industry }}</span>{% endfor %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p class="empty" id="empty" hidden>No cargo types match these filters.</p>
+{% endblock %}
