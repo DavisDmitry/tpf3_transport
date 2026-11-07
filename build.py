@@ -76,9 +76,18 @@ PAYLOAD_COVERS: Mapping[str, tuple[str, ...]] = MappingProxyType(
         "Everything": ("Passengers", "All Cargo", *CARGO),
     }
 )
+# Filter-only option matching every vehicle that carries some cargo.
+ANY_CARGO = "Any Cargo"
 # Payloads whose cargo hint would just list every cargo type.
 PAYLOAD_NO_HINT = frozenset({"All Cargo"})
-PAYLOAD_ORDER = ("Passengers", *CARGO, "No Liquid", "All Cargo", "Everything")
+PAYLOAD_ORDER = (
+    "Everything",
+    "Passengers",
+    "All Cargo",
+    ANY_CARGO,
+    *CARGO,
+    "No Liquid",
+)
 
 # Each rating column is merged with its numeric value column(s) into one cell:
 # the value is shown inside a badge colored by the rating.
@@ -438,7 +447,10 @@ def make_vehicle(keys: Sequence[str], row: Sequence[str]) -> Vehicle:
     if "payload" in filters:
         # Filter values this vehicle matches, "|"-separated.
         payload = filters["payload"]
-        filters["payload"] = "|".join((payload, *PAYLOAD_COVERS.get(payload, ())))
+        matches = (payload, *PAYLOAD_COVERS.get(payload, ()))
+        if payload != "Passengers":
+            matches = (*matches, ANY_CARGO)
+        filters["payload"] = "|".join(matches)
     attrs = {
         "name": cells["Name"].display.lower(),
         "start": str(cells["Start Year"].sort),
@@ -560,6 +572,7 @@ def build(out: Path) -> None:
         version={p.name: file_hash(p) for p in STATIC_DIR.iterdir() if p.is_file()},
         slugify=slugify,
         ratings=RATINGS,
+        any_cargo=ANY_CARGO,
         site_url=SITE_URL,
         site_name=SITE_NAME,
         analytics_token=ANALYTICS_TOKEN,

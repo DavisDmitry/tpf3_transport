@@ -32,7 +32,7 @@
       <span class="card-years">{{ category.first_year }} – {{ category.last_year }}</span>
       {% if category.filters.Payload %}
       <span class="card-tags">
-        {% for payload in category.filters.Payload %}<span class="tag">{{ payload }}</span>{% endfor %}
+        {% for payload in category.filters.Payload if payload != any_cargo %}<span class="tag">{{ payload }}</span>{% endfor %}
       </span>
       {% endif %}
     </a>
