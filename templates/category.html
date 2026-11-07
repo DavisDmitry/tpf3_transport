@@ -157,8 +157,11 @@
 {% set cargos = cargo_types.for_payload(payload) %}
 {% if cargos %}
 <div class="cargo-hint" id="cargo-{{ slugify(payload) }}" popover>
-  <p class="cargo-hint-title">{{ payload }}{% if payload == "Everything" %} <span>passengers and all cargo</span>{% endif %}</p>
+  <p class="cargo-hint-title">{{ payload }}</p>
   <ul>
+    {% if payload == "Everything" %}
+    <li><img src="{{ root }}static/cargo/passengers.png" width="32" height="32" alt="Passengers" title="Passengers" loading="lazy" decoding="async"></li>
+    {% endif %}
     {% for cargo in cargos %}
     <li><img src="{{ root }}static/cargo/{{ slugify(cargo.name) }}.png" width="32" height="32" alt="{{ cargo.name }}" title="{{ cargo.name }}" loading="lazy" decoding="async"></li>
     {% endfor %}
